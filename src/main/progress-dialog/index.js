@@ -1,9 +1,8 @@
-import Dialog from '@material-ui/core/Dialog'
-import DialogContent from '@material-ui/core/DialogContent'
 import CircularProgress from '@material-ui/core/CircularProgress';
-import React, { Component } from 'react'
+import Dialog from '@material-ui/core/Dialog'
 import DialogTitle from '@material-ui/core/es/DialogTitle/DialogTitle';
-
+import DialogContent from '@material-ui/core/DialogContent'
+import React, { Component } from 'react'
 
 class ProgressDialog extends Component {
   render() {

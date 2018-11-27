@@ -5,7 +5,6 @@ import AsyncSelect from 'react-select/lib/Async'
 import React, { Component } from 'react'
 import SpotifyApi from 'spotify-web-api-js'
 
-
 import './index.css'
 import LiftLogin from './login'
 import ProgressDialog from './progress-dialog'
@@ -40,12 +39,12 @@ class Main extends Component {
     this.setState({ isLoggedIn: true })
   }
 
-  addHighValenceTracksFromAlbum = async (album) => {
+  async addHighValenceTracksFromAlbum(album) {
     const artistTracks = await this.spotifyApi.getAlbumTracks(album.id)
     await artistTracks.items.forEach(this.addHighValenceTracks)
   }
 
-  addHighValenceTracks = async (track) => {
+  async addHighValenceTracks(track) {
     const trackAudioFeatures = await this.spotifyApi.getAudioFeaturesForTrack(track.id)
     if (trackAudioFeatures.valence > .6) {
       this.highValenceTracks.push(track)
