@@ -1,74 +1,116 @@
+import { throttle } from 'lodash'
+import { Search } from '@material-ui/icons'
+import { components } from 'react-select'
+import AsyncSelect from 'react-select/lib/Async'
 import React, { Component } from 'react'
-import Button from '@material-ui/core/Button'
-import axios from 'axios'
+import SpotifyApi from 'spotify-web-api-js'
+
 
 import './index.css'
+import LiftLogin from './login'
+import ProgressDialog from './progress-dialog'
 
 class Main extends Component {
 
+  spotifyApi = new SpotifyApi()
+  highValenceTracks = []
+
   constructor(props) {
     super(props)
-    const params = this.getHashParams()
+    this.handleLogin = this.handleLogin.bind(this)
+    this.handleQueryChange = this.handleQueryChange.bind(this)
+    this.queryArtist = throttle(this.queryArtist.bind(this), 250)
+
     this.state = {
-      isLoggedIn: params.hasOwnProperty('error') || !Object.keys(params).length ? false : true,
-      accessToken: !params.access_token ? '' : params.access_token
+      isLoggedIn: false,
+      isProgressDialogOpen: false
     }
   }
 
-  getHashParams() {
-    let hashParams = {}
-    let e
-    const r = /([^&;=]+)=?([^&;]*)/g
-    const q = window.location.hash.substring(1)
+  DropdownIndicator = (props) => {
+    return components.DropdownIndicator && (
+      <components.DropdownIndicator {...props}>
+        <Search/>
+      </components.DropdownIndicator>
+    )
+  }
 
-    while (e = r.exec(q)) {
-      hashParams[e[1]] = decodeURIComponent(e[2])
+  handleLogin(accessToken) {
+    this.spotifyApi.setAccessToken(accessToken)
+    this.setState({ isLoggedIn: true })
+  }
+
+  addHighValenceTracksFromAlbum = async (album) => {
+    const artistTracks = await this.spotifyApi.getAlbumTracks(album.id)
+    await artistTracks.items.forEach(this.addHighValenceTracks)
+  }
+
+  addHighValenceTracks = async (track) => {
+    const trackAudioFeatures = await this.spotifyApi.getAudioFeaturesForTrack(track.id)
+    if (trackAudioFeatures.valence > .6) {
+      this.highValenceTracks.push(track)
     }
-
-    return hashParams
+    console.log('this.highValenceTracks:', this.highValenceTracks)
   }
 
-  handleLogin() {
-    var client_id = 'e335c760164e4352a2813e94f86921b4'
-    var scope = 'user-read-private user-read-email'
-    var redirect_uri =
-      window.location.host === 'localhost:3000'
-        ? 'http://localhost:3000/'
-        : 'https://lift-music.herokuapp.com/';
-
-    var url = 'https://accounts.spotify.com/authorize'
-    url += '?response_type=token'
-    url += '&client_id=' + encodeURIComponent(client_id)
-    url += '&scope=' + encodeURIComponent(scope)
-    url += '&redirect_uri=' + encodeURIComponent(redirect_uri)
-
-    window.location = url
+  async handleQueryChange(selectedArtist, action) {
+    if (action.action === 'select-option') {
+      this.setState({ isProgressDialogOpen: true })
+      const artistAlbums = await this.spotifyApi.getArtistAlbums(selectedArtist.id, { limit: 50 })
+      let i = 0
+      await this.addHighValenceTracksFromAlbum(artistAlbums.items[i])
+      while (this.highValenceTracks.length < 20 && i < artistAlbums.items.length) {
+        await this.addHighValenceTracksFromAlbum(artistAlbums.items[i])
+        await new Promise(r => setTimeout(r, 500))
+        i++
+      }
+      this.setState({ isProgressDialogOpen: false })
+    }
   }
 
-  renderLogin() {
-    return (
-      <div className="header-container">
-          <span className="header-title">
-            lift.
-            music.
-          </span>
-        <Button variant="contained" color="primary" className="login-button" onClick={this.handleLogin}>
-          Login with Spotify
-        </Button>
-      </div>
+  async queryArtist(query) {
+    const queryResults = await this.spotifyApi.searchArtists(query)
+    return new Promise(
+      resolve => resolve(queryResults.artists.items),
     )
   }
 
   renderLift() {
     return (
-      <span>Welcome to lift.</span>
+      <div>
+        <ProgressDialog isOpen={this.state.isProgressDialogOpen}/>
+        <div className="lift-container">
+          <AsyncSelect
+            placeholder="Search your favorite artist"
+            className="search-bar"
+            components={{ DropdownIndicator: this.DropdownIndicator }}
+            onChange={this.handleQueryChange}
+            loadOptions={this.queryArtist}
+            isClearable={true}
+            noOptionsMessage={(inputValue) => 'No artists found'}
+            getOptionLabel={(option) => (option.name)}
+            getOptionValue={(option) => (option)}
+          />
+
+          <div className="track-list">
+            <ul>
+              {this.highValenceTracks.map(track => {
+                console.log('track:', track)
+                return (
+                  <li>{track.name}</li>
+                )
+              })}
+            </ul>
+          </div>
+        </div>
+      </div>
     )
   }
 
   render() {
     return (
       <div className="main-container">
-        {this.state.isLoggedIn ? this.renderLift() : this.renderLogin()}
+        {this.state.isLoggedIn ? this.renderLift() : (<LiftLogin onLogin={this.handleLogin}/>)}
       </div>
     )
   }

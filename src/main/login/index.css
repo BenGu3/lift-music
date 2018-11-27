@@ -1,0 +1,16 @@
+.header-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+}
+
+.header-title {
+  color: #125ec8;
+  margin-bottom: 15px;
+}
+
+.login-button {
+}
