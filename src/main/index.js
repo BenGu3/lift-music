@@ -99,7 +99,7 @@ class Main extends Component {
       const artistAlbums = await this.spotifyApi.getArtistAlbums(selectedArtist.id, { limit: 50 })
       let i = 0
       await this.addHighValenceTracksFromAlbum(artistAlbums.items[i])
-      while (this.highValenceTracks.length < 20 && i < artistAlbums.items.length) {
+      while (this.highValenceTracks.length < 10 && i < artistAlbums.items.length) {
         await this.addHighValenceTracksFromAlbum(artistAlbums.items[i])
         await new Promise(r => setTimeout(r, 500))
         i++
