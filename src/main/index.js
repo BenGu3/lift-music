@@ -1,12 +1,14 @@
-import { throttle } from 'lodash'
+import axios from 'axios'
 import { Search } from '@material-ui/icons'
 import { components } from 'react-select'
 import AsyncSelect from 'react-select/lib/Async'
 import React, { Component } from 'react'
 import SpotifyApi from 'spotify-web-api-js'
+import SpotifyPlayer from 'react-spotify-player'
 
 import './index.css'
 import LiftLogin from './login'
+import LiftPlaylistList from './lift-playlist-list'
 import ProgressDialog from './progress-dialog'
 
 class Main extends Component {
@@ -17,12 +19,22 @@ class Main extends Component {
   constructor(props) {
     super(props)
     this.handleLogin = this.handleLogin.bind(this)
+    this.updateStateUserData = this.updateStateUserData.bind(this)
+    this.getUsersLiftPlaylists = this.getUsersLiftPlaylists.bind(this)
+    this.addHighValenceTracksFromAlbum = this.addHighValenceTracksFromAlbum.bind(this)
+    this.addHighValenceTracks = this.addHighValenceTracks.bind(this)
+    this.createLiftPlaylist = this.createLiftPlaylist.bind(this)
     this.handleQueryChange = this.handleQueryChange.bind(this)
-    this.queryArtist = throttle(this.queryArtist.bind(this), 250)
+    this.queryArtist = this.queryArtist.bind(this)
+    this.handlePlaylistClick = this.handlePlaylistClick.bind(this)
 
     this.state = {
+      isCreatingPlaylist: false,
       isLoggedIn: false,
-      isProgressDialogOpen: false
+      isProgressDialogOpen: false,
+      me: {},
+      liftPlaylists: [],
+      selectedPlaylist: {}
     }
   }
 
@@ -34,9 +46,22 @@ class Main extends Component {
     )
   }
 
-  handleLogin(accessToken) {
+  async handleLogin(accessToken) {
     this.spotifyApi.setAccessToken(accessToken)
-    this.setState({ isLoggedIn: true })
+    axios.defaults.headers.common['Authorization'] = 'Bearer ' + accessToken;
+    await this.updateStateUserData()
+  }
+
+  async updateStateUserData() {
+    const me = await this.spotifyApi.getMe()
+    const liftPlaylists = await this.getUsersLiftPlaylists()
+    this.setState({ isLoggedIn: true, me, liftPlaylists, selectedPlaylist: liftPlaylists[0] || {} })
+  }
+
+  async getUsersLiftPlaylists() {
+    const myPlaylistsResponse = await this.spotifyApi.getUserPlaylists(this.state.me.id)
+    const myPlaylists = myPlaylistsResponse.items
+    return myPlaylists.filter(playlist => playlist.name.includes('(lift)'))
   }
 
   async addHighValenceTracksFromAlbum(album) {
@@ -52,6 +77,22 @@ class Main extends Component {
     console.log('this.highValenceTracks:', this.highValenceTracks)
   }
 
+  async createLiftPlaylist(artistName) {
+    const liftPlaylistResponse = await axios.post(
+      'https://api.spotify.com/v1/users/' + this.state.me.id + '/playlists',
+      { name: '(lift) ' + artistName }
+    )
+    // const liftPlaylist = await this.spotifyApi.createPlaylist({ name: '(lift) ' + artistName })
+    const liftPlaylist = liftPlaylistResponse.data
+
+    await this.spotifyApi.addTracksToPlaylist(
+      liftPlaylist.id,
+      this.highValenceTracks.map(track => track.uri)
+    )
+    this.highValenceTracks = []
+    await this.updateStateUserData()
+  }
+
   async handleQueryChange(selectedArtist, action) {
     if (action.action === 'select-option') {
       this.setState({ isProgressDialogOpen: true })
@@ -63,6 +104,7 @@ class Main extends Component {
         await new Promise(r => setTimeout(r, 500))
         i++
       }
+      await this.createLiftPlaylist(selectedArtist.name)
       this.setState({ isProgressDialogOpen: false })
     }
   }
@@ -74,10 +116,15 @@ class Main extends Component {
     )
   }
 
+  handlePlaylistClick(selectedPlaylist) {
+    this.setState({ selectedPlaylist })
+  }
+
   renderLift() {
     return (
       <div>
         <ProgressDialog isOpen={this.state.isProgressDialogOpen}/>
+        <LiftPlaylistList list={this.state.liftPlaylists} onPlaylistClick={this.handlePlaylistClick}/>
         <div className="lift-container">
           <AsyncSelect
             placeholder="Search your favorite artist"
@@ -90,16 +137,12 @@ class Main extends Component {
             getOptionLabel={(option) => (option.name)}
             getOptionValue={(option) => (option)}
           />
-
-          <div className="track-list">
-            <ul>
-              {this.highValenceTracks.map(track => {
-                console.log('track:', track)
-                return (
-                  <li>{track.name}</li>
-                )
-              })}
-            </ul>
+          <div className="spotify-player">
+            <SpotifyPlayer
+              uri={this.state.selectedPlaylist.uri}
+              size={{ width: '100%', height: '700' }}
+              theme='black'
+            />
           </div>
         </div>
       </div>

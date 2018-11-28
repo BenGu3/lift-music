@@ -26,7 +26,7 @@ class Login extends Component {
 
   handleLogin() {
     var client_id = 'e335c760164e4352a2813e94f86921b4'
-    var scope = 'user-read-private user-read-email'
+    var scope = 'user-read-private user-read-email playlist-modify-public'
     var redirect_uri =
       window.location.host === 'localhost:3000'
         ? 'http://localhost:3000/'

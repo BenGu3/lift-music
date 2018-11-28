@@ -1,0 +1,33 @@
+.lift-playlist-list {
+  background-color: #125ec8;
+  color: white;
+  position: absolute;
+  height: 100%;
+  width: 15%;
+  min-width: 50px;
+  left: 0;
+  top: 0;
+}
+
+.lift-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.lift-title {
+  margin-bottom: 48px;
+  font-weight: 600;
+  font-size: 48px;
+}
+
+.lift-motto {
+  font-size: 20px;
+}
+
+.playlist-button {
+  font-size: 18px;
+}
+
+.white-divider {
+  background-color: white!important;
+}
