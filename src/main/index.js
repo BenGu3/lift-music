@@ -79,7 +79,6 @@ class Main extends Component {
       this.highValenceTracks.push(track)
     }
     this.setState({ loadProgress: this.highValenceTracks.length * 100 / 10 })
-    console.log('this.highValenceTracks:', this.highValenceTracks)
   }
 
   async createLiftPlaylist(artistName) {
