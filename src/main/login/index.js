@@ -8,7 +8,9 @@ class Login extends Component {
   constructor(props) {
     super(props)
     const params = this.getHashParams()
-    params.access_token && this.props.onLogin(params.access_token)
+    this.state = {
+      params
+    }
   }
 
   getHashParams() {
@@ -42,6 +44,10 @@ class Login extends Component {
   }
 
   render() {
+    if (this.state.params.access_token) {
+      this.props.onLogin(this.state.params.access_token)
+      return (<div/>)
+    }
     return (
       <div className="header-container">
           <span className="header-title">

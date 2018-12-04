@@ -1,3 +1,12 @@
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 .lift-playlist-list {
   background-color: #125ec8;
   color: white;
@@ -7,6 +16,7 @@
   min-width: 50px;
   left: 0;
   top: 0;
+  animation: 0.5s ease-out 0s 1 slideInFromLeft;
 }
 
 .lift-header {

@@ -12,13 +12,33 @@
   margin-left: 15%;
 }
 
+@keyframes slideInFromTop {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
 .search-bar {
   width: 35%;
+  animation: 0.5s ease-out 0s 1 slideInFromTop;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .spotify-player {
   margin-top: 48px;
   width: 60%;
+  animation: 2s ease-out 0s 1 fadeIn;
 }
 
 .new-user-message-container {
@@ -29,6 +49,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  animation: 1s ease-out 0s 1 fadeIn;
 }
 
 .lift-title {
