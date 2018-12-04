@@ -71,6 +71,9 @@ class Main extends Component {
   }
 
   async addHighValenceTracks(track) {
+    if (this.highValenceTracks.find(highValenceTrack => highValenceTrack.name === track.name )) {
+      return
+    }
     const trackAudioFeatures = await this.spotifyApi.getAudioFeaturesForTrack(track.id)
     if (trackAudioFeatures.valence > .6) {
       this.highValenceTracks.push(track)
@@ -98,9 +101,8 @@ class Main extends Component {
   async handleQueryChange(selectedArtist, action) {
     if (action.action === 'select-option') {
       this.setState({ isProgressDialogOpen: true })
-      const artistAlbums = await this.spotifyApi.getArtistAlbums(selectedArtist.id, { limit: 50 })
+      const artistAlbums = await this.spotifyApi.getArtistAlbums(selectedArtist.id, { limit: 10 })
       let i = 0
-      await this.addHighValenceTracksFromAlbum(artistAlbums.items[i])
       while (this.highValenceTracks.length < 12 && i < artistAlbums.items.length) {
         await this.addHighValenceTracksFromAlbum(artistAlbums.items[i])
         await new Promise(r => setTimeout(r, 500))
