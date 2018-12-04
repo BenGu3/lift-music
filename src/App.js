@@ -9,6 +9,9 @@ const theme = createMuiTheme({
     primary: { main: '#125ec8' },
     secondary: { main: '#f2f5f7' }, // This is just green.A700 as hex.
   },
+  typography: {
+    useNextVariants: true
+  },
 })
 
 class App extends Component {
