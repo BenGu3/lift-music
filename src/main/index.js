@@ -71,7 +71,7 @@ class Main extends Component {
   }
 
   async addHighValenceTracks(track) {
-    if (this.highValenceTracks.find(highValenceTrack => highValenceTrack.name === track.name )) {
+    if (this.highValenceTracks.find(highValenceTrack => highValenceTrack.name === track.name)) {
       return
     }
     const trackAudioFeatures = await this.spotifyApi.getAudioFeaturesForTrack(track.id)

@@ -4,10 +4,12 @@ import DialogTitle from '@material-ui/core/es/DialogTitle/DialogTitle'
 import DialogContent from '@material-ui/core/DialogContent'
 import React, { Component } from 'react'
 
+import './index.css'
+
 class ProgressDialog extends Component {
   render() {
     return (
-      <Dialog open={this.props.isOpen}>
+      <Dialog open={this.props.isOpen} className="progress-dialog">
         <DialogTitle>Generating playlist...</DialogTitle>
         <DialogContent style={{ textAlign: 'center' }}>
           <LinearProgress variant="determinate" value={this.props.progress} color="primary"/>
