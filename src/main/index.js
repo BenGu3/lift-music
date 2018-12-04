@@ -159,6 +159,7 @@ class Main extends Component {
             noOptionsMessage={(inputValue) => 'No artists found'}
             getOptionLabel={(option) => (option.name)}
             getOptionValue={(option) => (option)}
+            value=""
           />
           {this.state.liftPlaylists.length ? this.renderSpotifyPlayer() : this.renderNewUserMessage()}
         </div>
