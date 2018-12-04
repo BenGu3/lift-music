@@ -20,3 +20,23 @@
   margin-top: 48px;
   width: 60%;
 }
+
+.new-user-message-container {
+  color: #125ec8;
+  margin-top: 48px;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.lift-title {
+  margin-bottom: 48px;
+  font-weight: 600;
+  font-size: 48px;
+}
+
+.lift-motto {
+  font-size: 20px;
+}

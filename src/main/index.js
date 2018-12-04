@@ -122,6 +122,27 @@ class Main extends Component {
     this.setState({ selectedPlaylist })
   }
 
+  renderSpotifyPlayer() {
+    return (
+      <div className="spotify-player">
+        <SpotifyPlayer
+          uri={this.state.selectedPlaylist.uri}
+          size={{ width: '100%', height: '700' }}
+        />
+      </div>
+    )
+  }
+
+  renderNewUserMessage() {
+    return (
+      <div className="new-user-message-container">
+        <span className="lift-motto">search your favorite artists.</span>
+        <span className="lift-motto">listen to uplifting music.</span>
+        <span className="lift-title">welcome to lift.</span>
+      </div>
+    )
+  }
+
   renderLift() {
     return (
       <div>
@@ -139,12 +160,7 @@ class Main extends Component {
             getOptionLabel={(option) => (option.name)}
             getOptionValue={(option) => (option)}
           />
-          <div className="spotify-player">
-            <SpotifyPlayer
-              uri={this.state.selectedPlaylist.uri}
-              size={{ width: '100%', height: '700' }}
-            />
-          </div>
+          {this.state.liftPlaylists.length ? this.renderSpotifyPlayer() : this.renderNewUserMessage()}
         </div>
       </div>
     )
