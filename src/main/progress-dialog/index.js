@@ -1,6 +1,6 @@
-import CircularProgress from '@material-ui/core/CircularProgress';
+import LinearProgress from '@material-ui/core/LinearProgress'
 import Dialog from '@material-ui/core/Dialog'
-import DialogTitle from '@material-ui/core/es/DialogTitle/DialogTitle';
+import DialogTitle from '@material-ui/core/es/DialogTitle/DialogTitle'
 import DialogContent from '@material-ui/core/DialogContent'
 import React, { Component } from 'react'
 
@@ -10,7 +10,7 @@ class ProgressDialog extends Component {
       <Dialog open={this.props.isOpen}>
         <DialogTitle>Generating playlist...</DialogTitle>
         <DialogContent style={{ textAlign: 'center' }}>
-          <CircularProgress variant="indeterminate" color="primary"/>
+          <LinearProgress variant="determinate" value={this.props.progress} color="primary"/>
         </DialogContent>
       </Dialog>
     )

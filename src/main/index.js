@@ -32,6 +32,7 @@ class Main extends Component {
       isCreatingPlaylist: false,
       isLoggedIn: false,
       isProgressDialogOpen: false,
+      loadProgress: 0,
       me: {},
       liftPlaylists: [],
       selectedPlaylist: {}
@@ -74,6 +75,7 @@ class Main extends Component {
     if (trackAudioFeatures.valence > .6) {
       this.highValenceTracks.push(track)
     }
+    this.setState({ loadProgress: this.highValenceTracks.length * 100 / 10 })
     console.log('this.highValenceTracks:', this.highValenceTracks)
   }
 
@@ -99,13 +101,13 @@ class Main extends Component {
       const artistAlbums = await this.spotifyApi.getArtistAlbums(selectedArtist.id, { limit: 50 })
       let i = 0
       await this.addHighValenceTracksFromAlbum(artistAlbums.items[i])
-      while (this.highValenceTracks.length < 10 && i < artistAlbums.items.length) {
+      while (this.highValenceTracks.length < 12 && i < artistAlbums.items.length) {
         await this.addHighValenceTracksFromAlbum(artistAlbums.items[i])
         await new Promise(r => setTimeout(r, 500))
         i++
       }
       await this.createLiftPlaylist(selectedArtist.name)
-      this.setState({ isProgressDialogOpen: false })
+      this.setState({ isProgressDialogOpen: false, loadProgress: 0 })
     }
   }
 
@@ -123,7 +125,7 @@ class Main extends Component {
   renderLift() {
     return (
       <div>
-        <ProgressDialog isOpen={this.state.isProgressDialogOpen}/>
+        <ProgressDialog isOpen={this.state.isProgressDialogOpen} progress={this.state.loadProgress}/>
         <LiftPlaylistList list={this.state.liftPlaylists} onPlaylistClick={this.handlePlaylistClick}/>
         <div className="lift-container">
           <AsyncSelect
@@ -141,7 +143,6 @@ class Main extends Component {
             <SpotifyPlayer
               uri={this.state.selectedPlaylist.uri}
               size={{ width: '100%', height: '700' }}
-              theme='black'
             />
           </div>
         </div>
