@@ -27,6 +27,7 @@ class Main extends Component {
     this.handleQueryChange = this.handleQueryChange.bind(this)
     this.queryArtist = this.queryArtist.bind(this)
     this.handlePlaylistClick = this.handlePlaylistClick.bind(this)
+    this.handleDeletePlaylist = this.handleDeletePlaylist.bind(this)
 
     this.state = {
       isCreatingPlaylist: false,
@@ -123,6 +124,17 @@ class Main extends Component {
     this.setState({ selectedPlaylist })
   }
 
+  handleDeletePlaylist(playlistId) {
+    this.spotifyApi.unfollowPlaylist(playlistId)
+    this.setState((prevState) => {
+      const updatedPlaylist = prevState.liftPlaylists.filter(playlist => playlist.id !== playlistId)
+      return {
+        liftPlaylists: updatedPlaylist,
+        selectedPlaylist: updatedPlaylist[0]
+      }
+    })
+  }
+
   renderSpotifyPlayer() {
     return (
       <div className="spotify-player">
@@ -148,7 +160,8 @@ class Main extends Component {
     return (
       <div>
         <ProgressDialog isOpen={this.state.isProgressDialogOpen} progress={this.state.loadProgress}/>
-        <LiftPlaylistList list={this.state.liftPlaylists} onPlaylistClick={this.handlePlaylistClick}/>
+        <LiftPlaylistList list={this.state.liftPlaylists} onPlaylistClick={this.handlePlaylistClick}
+                          onDeletePlaylist={this.handleDeletePlaylist}/>
         <div className="lift-container">
           <AsyncSelect
             placeholder="Search your favorite artist"
