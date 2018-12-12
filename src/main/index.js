@@ -11,6 +11,7 @@ import './index.css'
 import LiftLogin from './login'
 import LiftPlaylistList from './lift-playlist-list'
 import ProgressDialog from './progress-dialog'
+import NoTracksDialog from './no-tracks-dialog';
 
 class Main extends Component {
 
@@ -30,13 +31,15 @@ class Main extends Component {
     this.handleDeletePlaylist = this.handleDeletePlaylist.bind(this)
 
     this.state = {
+      artistHasNoHighValenceTracks: false,
       isCreatingPlaylist: false,
       isLoggedIn: false,
+      isNoHighValenceTracksDialogOpen: false,
       isProgressDialogOpen: false,
-      loadProgress: 0,
       me: {},
       liftPlaylists: [],
-      selectedPlaylist: {}
+      loadProgress: 0,
+      selectedPlaylist: {},
     }
   }
 
@@ -73,6 +76,7 @@ class Main extends Component {
       await this.addHighValenceTracksFromAlbum(artistAlbums.items[i], this.highValenceTracks, 12)
       i++
     }
+    this.setState({ artistHasNoHighValenceTracks: !this.highValenceTracks.length })
   }
 
   async addHighValenceTracksFromRelatedArtists(artist) {
@@ -134,6 +138,10 @@ class Main extends Component {
     console.time('Artist time')
     await this.addHighValenceTracksFromArtist(artist)
     console.timeEnd('Artist time')
+    if (this.state.artistHasNoHighValenceTracks) {
+      this.setState({ artistHasNoHighValenceTracks: false, isNoHighValenceTracksDialogOpen: true })
+      return
+    }
     console.time('Related artists time')
     await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[0])
     await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[1])
@@ -200,6 +208,8 @@ class Main extends Component {
     return (
       <div>
         <ProgressDialog isOpen={this.state.isProgressDialogOpen} progress={this.state.loadProgress}/>
+        <NoTracksDialog isOpen={this.state.isNoHighValenceTracksDialogOpen}
+                        onClose={() => this.setState({ isNoHighValenceTracksDialogOpen: false })}/>
         <LiftPlaylistList list={this.state.liftPlaylists} onPlaylistClick={this.handlePlaylistClick}
                           onDeletePlaylist={this.handleDeletePlaylist}/>
         <div className="lift-container">
