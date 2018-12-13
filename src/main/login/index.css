@@ -12,5 +12,24 @@
   margin-bottom: 15px;
 }
 
-.login-button {
+.lift-intro-container {
+  color: #125ec8;
+  margin-top: 12px;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: 2s ease-out 0s 1 fadeIn;
+}
+
+.login-lift-title {
+  margin-bottom: 16px;
+  font-weight: 600;
+  font-size: 48px;
+}
+
+.login-lift-motto {
+  font-size: 20px;
+  margin: 6px 0;
 }

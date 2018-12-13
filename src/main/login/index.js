@@ -50,10 +50,12 @@ class Login extends Component {
     }
     return (
       <div className="header-container">
-          <span className="header-title">
-            lift.
-            music.
-          </span>
+        <div className="lift-intro-container">
+          <span className="login-lift-motto">search your favorite artists.</span>
+          <span className="login-lift-motto">access a curated playlist.</span>
+          <span className="login-lift-motto">listen to uplifting music.</span>
+          <span className="login-lift-title">welcome to lift.</span>
+        </div>
         <Button variant="contained" color="primary" className="login-button" onClick={this.handleLogin}>
           Login with Spotify
         </Button>
