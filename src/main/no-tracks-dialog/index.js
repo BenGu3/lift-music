@@ -1,13 +1,9 @@
-import Button from '@material-ui/core/es/Button/Button';
-import Dialog from '@material-ui/core/Dialog'
-import DialogActions from '@material-ui/core/es/DialogActions/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent'
-import DialogTitle from '@material-ui/core/es/DialogTitle/DialogTitle'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@material-ui/core'
 import React, { Component } from 'react'
 
 import './index.css'
 
-class NoTracksDialog extends Component {
+export default class NoTracksDialog extends Component {
   render() {
     return (
       <Dialog open={this.props.isOpen} onClose={this.props.onClose} className="no-tracks-dialog">
@@ -25,5 +21,3 @@ class NoTracksDialog extends Component {
     )
   }
 }
-
-export default NoTracksDialog

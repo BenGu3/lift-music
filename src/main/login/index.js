@@ -3,22 +3,21 @@ import React, { Component } from 'react'
 
 import './index.css'
 
-class Login extends Component {
-
+export default class Login extends Component {
   constructor(props) {
     super(props)
-    const params = this.getHashParams()
     this.state = {
-      params
+      params: this.getHashParams()
     }
   }
 
   getHashParams() {
-    let hashParams = {}
+    const hashParams = {}
     let e
     const r = /([^&;=]+)=?([^&;]*)/g
     const q = window.location.hash.substring(1)
 
+    // eslint-disable-next-line no-cond-assign
     while (e = r.exec(q)) {
       hashParams[e[1]] = decodeURIComponent(e[2])
     }
@@ -27,26 +26,21 @@ class Login extends Component {
   }
 
   handleLogin() {
-    var client_id = 'e335c760164e4352a2813e94f86921b4'
-    var scope = 'user-read-private user-read-email playlist-modify-public'
-    var redirect_uri =
+    const clientId = 'e335c760164e4352a2813e94f86921b4'
+    const scope = 'user-read-private user-read-email playlist-modify-public'
+    const redirectUri =
       window.location.host === 'localhost:3000'
         ? 'http://localhost:3000/'
-        : 'https://lift-music.herokuapp.com/';
+        : 'https://lift-music.herokuapp.com/'
 
-    var url = 'https://accounts.spotify.com/authorize'
-    url += '?response_type=token'
-    url += '&client_id=' + encodeURIComponent(client_id)
-    url += '&scope=' + encodeURIComponent(scope)
-    url += '&redirect_uri=' + encodeURIComponent(redirect_uri)
-
+    const url = `https://accounts.spotify.com/authorize?response_type=token&client_id=${encodeURIComponent(clientId)}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirectUri)}`
     window.location = url
   }
 
   render() {
     if (this.state.params.access_token) {
       this.props.onLogin(this.state.params.access_token)
-      return (<div/>)
+      return (<div />)
     }
     return (
       <div className="header-container">
@@ -63,5 +57,3 @@ class Login extends Component {
     )
   }
 }
-
-export default Login

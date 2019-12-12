@@ -1,20 +1,28 @@
+import { Search } from '@material-ui/icons'
 import axios from 'axios'
 import { shuffle } from 'lodash'
-import { Search } from '@material-ui/icons'
+import React, { Component } from 'react'
 import { components } from 'react-select'
 import AsyncSelect from 'react-select/async'
-import React, { Component } from 'react'
-import SpotifyApi from 'spotify-web-api-js'
 import SpotifyPlayer from 'react-spotify-player'
+import SpotifyApi from 'spotify-web-api-js'
+
+import LiftPlaylistList from './lift-playlist-list'
+import LiftLogin from './login'
+import NoTracksDialog from './no-tracks-dialog'
+import ProgressDialog from './progress-dialog'
 
 import './index.css'
-import LiftLogin from './login'
-import LiftPlaylistList from './lift-playlist-list'
-import ProgressDialog from './progress-dialog'
-import NoTracksDialog from './no-tracks-dialog';
 
-class Main extends Component {
+function DropdownIndicator(props) {
+  return components.DropdownIndicator && (
+    <components.DropdownIndicator {...props}>
+      <Search />
+    </components.DropdownIndicator>
+  )
+}
 
+export default class Main extends Component {
   constructor(props) {
     super(props)
     this.handleLogin = this.handleLogin.bind(this)
@@ -38,21 +46,13 @@ class Main extends Component {
       me: {},
       liftPlaylists: [],
       loadProgress: 0,
-      selectedPlaylist: {},
+      selectedPlaylist: {}
     }
-  }
-
-  DropdownIndicator(props) {
-    return components.DropdownIndicator && (
-      <components.DropdownIndicator {...props}>
-        <Search/>
-      </components.DropdownIndicator>
-    )
   }
 
   async handleLogin(accessToken) {
     this.state.spotifyApi.setAccessToken(accessToken)
-    axios.defaults.headers.common['Authorization'] = 'Bearer ' + accessToken;
+    axios.defaults.headers.common.Authorization = 'Bearer ' + accessToken
     await this.updateStateUserData()
   }
 
@@ -98,7 +98,7 @@ class Main extends Component {
       return
     }
     const trackAudioFeatures = await this.state.spotifyApi.getAudioFeaturesForTrack(track.id)
-    if (trackAudioFeatures.valence > .6) {
+    if (trackAudioFeatures.valence > 0.6) {
       highValenceTrackList.push(track)
     }
     this.setState({ loadProgress: this.state.highValenceTracks.length * 100 / 24 })
@@ -134,28 +134,28 @@ class Main extends Component {
 
   async createLiftPlaylist(artist) {
     const relatedArtists = await this.state.spotifyApi.getArtistRelatedArtists(artist.id)
-    console.time('Artist time')
+    // console.time('Artist time')
     await this.addHighValenceTracksFromArtist(artist)
-    console.timeEnd('Artist time')
+    // console.timeEnd('Artist time')
     if (this.state.artistHasNoHighValenceTracks) {
       this.setState({ artistHasNoHighValenceTracks: false, isNoHighValenceTracksDialogOpen: true })
       return
     }
-    console.time('Related artists time')
+    // console.time('Related artists time')
     await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[0])
     await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[1])
     await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[2])
     await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[3])
-    console.timeEnd('Related artists time')
+    // console.timeEnd('Related artists time')
     await this.createPlaylistAndAddSongs(artist.name)
   }
 
   async handleQueryChange(selectedArtist, action) {
     if (action.action === 'select-option') {
       this.setState({ isProgressDialogOpen: true })
-      console.time('Total time')
+      // console.time('Total time')
       await this.createLiftPlaylist(selectedArtist)
-      console.timeEnd('Total time')
+      // console.timeEnd('Total time')
       this.setState({ isProgressDialogOpen: false, loadProgress: 0 })
     }
   }
@@ -163,7 +163,7 @@ class Main extends Component {
   async queryArtist(query) {
     const queryResults = await this.state.spotifyApi.searchArtists(query)
     return new Promise(
-      resolve => resolve(queryResults.artists.items),
+      resolve => resolve(queryResults.artists.items)
     )
   }
 
@@ -206,19 +206,24 @@ class Main extends Component {
   renderLift() {
     return (
       <div>
-        <ProgressDialog isOpen={this.state.isProgressDialogOpen} progress={this.state.loadProgress}/>
-        <NoTracksDialog isOpen={this.state.isNoHighValenceTracksDialogOpen}
-                        onClose={() => this.setState({ isNoHighValenceTracksDialogOpen: false })}/>
-        <LiftPlaylistList list={this.state.liftPlaylists} onPlaylistClick={this.handlePlaylistClick}
-                          onDeletePlaylist={this.handleDeletePlaylist}/>
+        <ProgressDialog isOpen={this.state.isProgressDialogOpen} progress={this.state.loadProgress} />
+        <NoTracksDialog
+          isOpen={this.state.isNoHighValenceTracksDialogOpen}
+          onClose={() => this.setState({ isNoHighValenceTracksDialogOpen: false })}
+        />
+        <LiftPlaylistList
+          list={this.state.liftPlaylists}
+          onPlaylistClick={this.handlePlaylistClick}
+          onDeletePlaylist={this.handleDeletePlaylist}
+        />
         <div className="lift-container">
           <AsyncSelect
             placeholder="Search your favorite artist"
             className="search-bar"
-            components={{ DropdownIndicator: DropdownIndicator }}
+            components={{ DropdownIndicator }}
             onChange={this.handleQueryChange}
             loadOptions={this.queryArtist}
-            isClearable={true}
+            isClearable
             noOptionsMessage={(inputValue) => 'No artists found'}
             getOptionLabel={(option) => (option.name)}
             getOptionValue={(option) => (option)}
@@ -233,10 +238,8 @@ class Main extends Component {
   render() {
     return (
       <div className="main-container">
-        {this.state.isLoggedIn ? this.renderLift() : (<LiftLogin onLogin={this.handleLogin}/>)}
+        {this.state.isLoggedIn ? this.renderLift() : (<LiftLogin onLogin={this.handleLogin} />)}
       </div>
     )
   }
 }
-
-export default Main

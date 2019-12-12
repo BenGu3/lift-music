@@ -1,0 +1,16 @@
+{
+  "parser": "babel-eslint",
+  "extends": ["standard", "standard-react"],
+  "plugins": ["babel"],
+  "rules": {
+    "semi": ["error", "never"],
+    "quotes": ["error", "single"],
+    "curly": "off",
+    "jsx-quotes": ["error", "prefer-double"],
+    "space-before-function-paren": ["error", { "anonymous": "never", "named": "never", "asyncArrow": "always" }],
+    "no-console": ["error"],
+    "no-unused-vars": [2, { "vars": "all", "args": "none", "ignoreRestSiblings": true }],
+    "no-unused-expressions": "off",
+    "react/prop-types": [2, { "skipUndeclared": true }]
+  }
+}
