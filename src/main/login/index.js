@@ -11,7 +11,7 @@ export default class Login extends Component {
     }
   }
 
-  getHashParams() {
+  getHashParams = () => {
     const hashParams = {}
     let e
     const r = /([^&;=]+)=?([^&;]*)/g
@@ -25,15 +25,11 @@ export default class Login extends Component {
     return hashParams
   }
 
-  handleLogin() {
-    const clientId = 'e335c760164e4352a2813e94f86921b4'
-    const scope = 'user-read-private user-read-email playlist-modify-public'
-    const redirectUri =
-      window.location.host === 'localhost:3000'
-        ? 'http://localhost:3000/'
-        : 'https://lift-music.herokuapp.com/'
-
-    const url = `https://accounts.spotify.com/authorize?response_type=token&client_id=${encodeURIComponent(clientId)}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirectUri)}`
+  handleLogin = () => {
+    const url = 'https://accounts.spotify.com/authorize?response_type=token' +
+      '&client_id=' + encodeURIComponent(process.env.spotifyClientId) +
+      '&scope=' + encodeURIComponent(process.env.spotifyApiScope) +
+      '&redirect_uri=' + encodeURIComponent(process.env.redirectUri)
     window.location = url
   }
 
