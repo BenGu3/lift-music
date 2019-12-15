@@ -3,7 +3,7 @@
   min-height: 100vh;
 }
 
-.lift-container {
+.container {
   padding: 15px;
   display: flex;
   flex-direction: column;
@@ -52,12 +52,12 @@
   animation: 1s ease-out 0s 1 fadeIn;
 }
 
-.lift-title {
+.title {
   margin-bottom: 48px;
   font-weight: 600;
   font-size: 48px;
 }
 
-.lift-motto {
+.motto {
   font-size: 20px;
 }

@@ -7,8 +7,8 @@ import AsyncSelect from 'react-select/async'
 import SpotifyPlayer from 'react-spotify-player'
 import SpotifyApi from 'spotify-web-api-js'
 
-import LiftPlaylistList from './lift-playlist-list'
-import LiftLogin from './login'
+import PlaylistList from './playlist-list'
+import Login from './login'
 import NoTracksDialog from './no-tracks-dialog'
 import ProgressDialog from './progress-dialog'
 
@@ -34,7 +34,7 @@ export default class Main extends Component {
       isProgressDialogOpen: false,
       highValenceTracks: [],
       me: {},
-      liftPlaylists: [],
+      playlists: [],
       loadProgress: 0,
       selectedPlaylist: {}
     }
@@ -48,8 +48,8 @@ export default class Main extends Component {
 
   updateStateUserData = async () => {
     const me = await this.state.spotifyApi.getMe()
-    const liftPlaylists = await this.getUsersLiftPlaylists()
-    this.setState({ isLoggedIn: true, me, liftPlaylists, selectedPlaylist: liftPlaylists[0] || {} })
+    const playlists = await this.getUsersLiftPlaylists()
+    this.setState({ isLoggedIn: true, me, playlists, selectedPlaylist: playlists[0] || {} })
   }
 
   getUsersLiftPlaylists = async () => {
@@ -157,20 +157,26 @@ export default class Main extends Component {
     )
   }
 
-  handlePlaylistClick = selectedPlaylist => {
-    this.setState({ selectedPlaylist })
-  }
+  handleCloseNoTrackDialog = () => this.setState({ isNoHighValenceTracksDialogOpen: false })
+
+  handlePlaylistClick = selectedPlaylist => this.setState({ selectedPlaylist })
 
   handleDeletePlaylist = playlistId => {
     this.state.spotifyApi.unfollowPlaylist(playlistId)
     this.setState((prevState) => {
-      const updatedPlaylist = prevState.liftPlaylists.filter(playlist => playlist.id !== playlistId)
+      const updatedPlaylist = prevState.playlists.filter(playlist => playlist.id !== playlistId)
       return {
-        liftPlaylists: updatedPlaylist,
+        playlists: updatedPlaylist,
         selectedPlaylist: updatedPlaylist[0]
       }
     })
   }
+
+  getNoOptionsMessage = inputValue => 'No artists found'
+
+  getOptionLabel = option => option.name
+
+  getOptionValue = option => option
 
   renderSpotifyPlayer() {
     return (
@@ -186,9 +192,9 @@ export default class Main extends Component {
   renderNewUserMessage() {
     return (
       <div className="new-user-message-container">
-        <span className="lift-motto">search your favorite artists.</span>
-        <span className="lift-motto">listen to uplifting music.</span>
-        <span className="lift-title">welcome to lift.</span>
+        <span className="motto">search your favorite artists.</span>
+        <span className="motto">listen to uplifting music.</span>
+        <span className="title">welcome to lift.</span>
       </div>
     )
   }
@@ -199,14 +205,14 @@ export default class Main extends Component {
         <ProgressDialog isOpen={this.state.isProgressDialogOpen} progress={this.state.loadProgress} />
         <NoTracksDialog
           isOpen={this.state.isNoHighValenceTracksDialogOpen}
-          onClose={() => this.setState({ isNoHighValenceTracksDialogOpen: false })}
+          onClose={this.handleCloseNoTrackDialog}
         />
-        <LiftPlaylistList
-          list={this.state.liftPlaylists}
+        <PlaylistList
+          playlists={this.state.playlists}
           onPlaylistClick={this.handlePlaylistClick}
           onDeletePlaylist={this.handleDeletePlaylist}
         />
-        <div className="lift-container">
+        <div className="container">
           <AsyncSelect
             placeholder="Search your favorite artist"
             className="search-bar"
@@ -214,12 +220,12 @@ export default class Main extends Component {
             onChange={this.handleQueryChange}
             loadOptions={this.queryArtist}
             isClearable
-            noOptionsMessage={inputValue => 'No artists found'}
-            getOptionLabel={option => (option.name)}
-            getOptionValue={option => (option)}
+            noOptionsMessage={this.getNoOptionsMessage}
+            getOptionLabel={this.getOptionLabel}
+            getOptionValue={this.getOptionValue}
             value=""
           />
-          {this.state.liftPlaylists.length ? this.renderSpotifyPlayer() : this.renderNewUserMessage()}
+          {this.state.playlists.length ? this.renderSpotifyPlayer() : this.renderNewUserMessage()}
         </div>
       </div>
     )
@@ -228,7 +234,7 @@ export default class Main extends Component {
   render() {
     return (
       <div className="main-container">
-        {this.state.isLoggedIn ? this.renderLift() : (<LiftLogin onLogin={this.handleLogin} />)}
+        {this.state.isLoggedIn ? this.renderLift() : (<Login onLogin={this.handleLogin} />)}
       </div>
     )
   }
