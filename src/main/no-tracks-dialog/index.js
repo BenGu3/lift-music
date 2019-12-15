@@ -1,9 +1,15 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@material-ui/core'
 import React, { Component } from 'react'
+import { func } from 'prop-types'
 
 import './index.css'
 
 export default class NoTracksDialog extends Component {
+  static propTypes = {
+    isOpen: func,
+    onClose: func
+  }
+
   render() {
     return (
       <Dialog open={this.props.isOpen} onClose={this.props.onClose} className="no-tracks-dialog">

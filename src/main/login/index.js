@@ -1,17 +1,22 @@
 import Button from '@material-ui/core/Button'
+import { func } from 'prop-types'
 import React, { Component } from 'react'
 
 import './index.css'
 
 export default class Login extends Component {
+  static propTypes = {
+    onLogin: func
+  }
+
   constructor(props) {
     super(props)
     this.state = {
-      params: this.getHashParams()
+      accessToken: this.getAccessToken()
     }
   }
 
-  getHashParams = () => {
+  getAccessToken = () => {
     const hashParams = {}
     let e
     const r = /([^&;=]+)=?([^&;]*)/g
@@ -22,7 +27,7 @@ export default class Login extends Component {
       hashParams[e[1]] = decodeURIComponent(e[2])
     }
 
-    return hashParams
+    return hashParams.access_token
   }
 
   handleLogin = () => {
@@ -34,8 +39,8 @@ export default class Login extends Component {
   }
 
   render() {
-    if (this.state.params.access_token) {
-      this.props.onLogin(this.state.params.access_token)
+    if (this.state.accessToken) {
+      this.props.onLogin(this.state.accessToken)
       return (<div />)
     }
     return (
