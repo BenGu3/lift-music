@@ -11,7 +11,7 @@ module.exports = (env) => {
     })
   ]
 
-  if (env && env.NODE_ENV === 'production') {
+  if (!env || env.NODE_ENV !== 'production') {
     const dotenv = new Dotenv({ path: './.env.dev' })
     plugins.push(dotenv)
   }
