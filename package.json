@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "node ./server.js",
+    "start:dev": "webpack-dev-server",
     "build": "webpack --env.NODE_ENV=production"
   },
   "devDependencies": {
@@ -44,6 +45,7 @@
     "webpack-dev-server": "3.9.0"
   },
   "dependencies": {
-    "@babel/runtime": "7.7.6"
+    "@babel/runtime": "7.7.6",
+    "express": "4.17.1"
   }
 }
