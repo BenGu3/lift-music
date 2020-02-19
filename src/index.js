@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core'
 
 import './index.css'
-import Main from './main'
+import App from './app'
 
 const theme = createMuiTheme({
   palette: {
@@ -17,7 +17,7 @@ const theme = createMuiTheme({
 
 ReactDOM.render(
   <MuiThemeProvider theme={theme}>
-    <Main />
+    <App />
   </MuiThemeProvider>,
   document.getElementById('root')
 )

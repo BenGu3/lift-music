@@ -14,8 +14,8 @@ const ProgressDialog = props => (
 )
 
 ProgressDialog.propTypes = {
-  isOpen: func,
-  progress: number
+  isOpen: func.isRequired,
+  progress: number.isRequired
 }
 
 export default ProgressDialog

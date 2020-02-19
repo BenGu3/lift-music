@@ -7,12 +7,12 @@ import AsyncSelect from 'react-select/async'
 import SpotifyPlayer from 'react-spotify-player'
 import SpotifyApi from 'spotify-web-api-js'
 
-import PlaylistList from './playlist-list'
-import Login from './login'
-import NoTracksDialog from './no-tracks-dialog'
-import ProgressDialog from './progress-dialog'
+import PlaylistList from './components/playlist-list'
+import Login from './components/login'
+import NoTracksDialog from './components/no-tracks-dialog'
+import ProgressDialog from './components/progress-dialog'
 
-import './index.css'
+import './app.css'
 
 function DropdownIndicator(props) {
   return components.DropdownIndicator && (
@@ -22,7 +22,7 @@ function DropdownIndicator(props) {
   )
 }
 
-export default class Main extends Component {
+export default class extends Component {
   constructor(props) {
     super(props)
     this.state = {

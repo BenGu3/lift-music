@@ -6,7 +6,7 @@ import './index.css'
 
 export default class Login extends Component {
   static propTypes = {
-    onLogin: func
+    onLogin: func.isRequired
   }
 
   constructor(props) {

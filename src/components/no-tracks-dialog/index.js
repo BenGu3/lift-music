@@ -19,8 +19,8 @@ const NoTracksDialog = props => (
 )
 
 NoTracksDialog.propTypes = {
-  isOpen: func,
-  onClose: func
+  isOpen: func.isRequired,
+  onClose: func.isRequired
 }
 
 export default NoTracksDialog

@@ -6,9 +6,9 @@ import './index.css'
 
 export default class PlaylistList extends Component {
   static propTypes = {
-    playlists: array,
-    onPlaylistClick: func,
-    onDeletePlaylist: func
+    playlists: array.isRequired,
+    onPlaylistClick: func.isRequired,
+    onDeletePlaylist: func.isRequired
   }
 
   renderPlaylists() {
