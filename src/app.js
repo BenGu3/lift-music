@@ -1,11 +1,12 @@
 import { Search } from '@material-ui/icons'
 import axios from 'axios'
-import { shuffle } from 'lodash'
+import { find, shuffle } from 'lodash'
 import React, { Component } from 'react'
 import { components } from 'react-select'
 import AsyncSelect from 'react-select/async'
 import SpotifyPlayer from 'react-spotify-player'
 import SpotifyApi from 'spotify-web-api-js'
+import * as promise from 'bluebird'
 
 import PlaylistList from './components/playlist-list'
 import Login from './components/login'
@@ -13,6 +14,9 @@ import NoTracksDialog from './components/no-tracks-dialog'
 import ProgressDialog from './components/progress-dialog'
 
 import './app.css'
+
+const VALENCE_THRESHOLD = 0.6
+const MAX_PLAYLIST_LENGTH = 30
 
 function DropdownIndicator(props) {
   return components.DropdownIndicator && (
@@ -23,146 +27,108 @@ function DropdownIndicator(props) {
 }
 
 export default class extends Component {
+  spotifyApi = null
+
   constructor(props) {
     super(props)
+    this.spotifyApi = new SpotifyApi()
     this.state = {
-      spotifyApi: new SpotifyApi(),
-      artistHasNoHighValenceTracks: false,
       isCreatingPlaylist: false,
       isLoggedIn: false,
       isNoHighValenceTracksDialogOpen: false,
       isProgressDialogOpen: false,
-      highValenceTracks: [],
-      me: {},
+      me: null,
       playlists: [],
       loadProgress: 0,
-      selectedPlaylist: {}
+      selectedPlaylist: null
     }
   }
 
-  handleLogin = async accessToken => {
-    this.state.spotifyApi.setAccessToken(accessToken)
-    axios.defaults.headers.common.Authorization = 'Bearer ' + accessToken
-    await this.updateStateUserData()
+  fetchUserData = async () => {
+    await this.fetchMe()
+    await this.fetchUserLiftPlaylists()
   }
-
-  updateStateUserData = async () => {
-    const me = await this.state.spotifyApi.getMe()
-    const playlists = await this.getUsersLiftPlaylists()
-    this.setState({ isLoggedIn: true, me, playlists, selectedPlaylist: playlists[0] || {} })
+  fetchMe = async () => {
+    const me = await this.spotifyApi.getMe()
+    this.setState({ isLoggedIn: true, me })
   }
-
-  getUsersLiftPlaylists = async () => {
-    const myPlaylistsResponse = await this.state.spotifyApi.getUserPlaylists(this.state.me.id)
-    const myPlaylists = myPlaylistsResponse.items
-    return myPlaylists.filter(playlist => playlist.name.includes('(lift)'))
-  }
-
-  addHighValenceTracksFromArtist = async artist => {
-    const artistAlbums = await this.state.spotifyApi.getArtistAlbums(artist.id, { limit: 5 })
-    let i = 0
-    while (this.state.highValenceTracks.length < 12 && i < artistAlbums.items.length) {
-      await this.addHighValenceTracksFromAlbum(artistAlbums.items[i], this.state.highValenceTracks, 12)
-      i++
-    }
-    this.setState({ artistHasNoHighValenceTracks: !this.state.highValenceTracks.length })
-  }
-
-  addHighValenceTracksFromRelatedArtists = async artist => {
-    let highValenceTracksFromRelatedArtists = []
-    const relatedArtistAlbums = await this.state.spotifyApi.getArtistAlbums(artist.id, { limit: 3 })
-    let i = 0
-    while (highValenceTracksFromRelatedArtists.length < 3 && i < relatedArtistAlbums.items.length) {
-      await this.addHighValenceTracksFromAlbum(relatedArtistAlbums.items[i], highValenceTracksFromRelatedArtists, 3)
-      i++
-    }
-    this.state.highValenceTracks = this.state.highValenceTracks.concat(highValenceTracksFromRelatedArtists.slice(0, 3))
-    highValenceTracksFromRelatedArtists = []
-  }
-
-  addHighValenceTracks = async (track, highValenceTrackList, maxListSize) => {
-    if (highValenceTrackList.length > maxListSize) {
-      return
-    }
-    if (highValenceTrackList.find(highValenceTrack => highValenceTrack.name === track.name)) {
-      return
-    }
-    const trackAudioFeatures = await this.state.spotifyApi.getAudioFeaturesForTrack(track.id)
-    if (trackAudioFeatures.valence > 0.6) {
-      highValenceTrackList.push(track)
-    }
-    this.setState({ loadProgress: this.state.highValenceTracks.length * 100 / 24 })
-  }
-
-  addHighValenceTracksFromAlbum = async (album, highValenceTrackList, maxListSize) => {
-    const artistTracks = await this.state.spotifyApi.getAlbumTracks(album.id)
-    if (artistTracks.items.length > 16)
-      return
-    await Promise.all(artistTracks.items.slice(0, artistTracks.items.length / 4).map(async track => this.addHighValenceTracks(track, highValenceTrackList, maxListSize)))
-    await Promise.all(artistTracks.items.slice(artistTracks.items.length / 4, artistTracks.items.length / 2).map(async track => this.addHighValenceTracks(track, highValenceTrackList, maxListSize)))
-    await Promise.all(artistTracks.items.slice(artistTracks.items.length / 2, artistTracks.items.length * 3 / 4).map(async track => this.addHighValenceTracks(track, highValenceTrackList, maxListSize)))
-    await Promise.all(artistTracks.items.slice(artistTracks.items.length * 3 / 4, artistTracks.items.length).map(async track => this.addHighValenceTracks(track, highValenceTrackList, maxListSize)))
-  }
-
-  createPlaylistAndAddSongs = async artistName => {
-    const liftPlaylistResponse = await axios.post(
-      'https://api.spotify.com/v1/users/' + this.state.me.id + '/playlists',
-      { name: '(lift) ' + artistName }
-    )
-    // const liftPlaylist = await this.state.spotifyApi.createPlaylist({ name: '(lift) ' + artistName })
-    const liftPlaylist = liftPlaylistResponse.data
-
-    this.state.highValenceTracks = shuffle(this.state.highValenceTracks)
-
-    await this.state.spotifyApi.addTracksToPlaylist(
-      liftPlaylist.id,
-      this.state.highValenceTracks.map(track => track.uri)
-    )
-    this.state.highValenceTracks = []
-    await this.updateStateUserData()
+  fetchUserLiftPlaylists = async () => {
+    const { items: myPlaylists } = await this.spotifyApi.getUserPlaylists(this.state.me.id)
+    const playlists = myPlaylists.filter(playlist => playlist.name.includes('(lift)'))
+    this.setState({ playlists, selectedPlaylist: playlists[0] || null })
   }
 
   createLiftPlaylist = async artist => {
-    const relatedArtists = await this.state.spotifyApi.getArtistRelatedArtists(artist.id)
-    // console.time('Artist time')
-    await this.addHighValenceTracksFromArtist(artist)
-    // console.timeEnd('Artist time')
-    if (this.state.artistHasNoHighValenceTracks) {
-      this.setState({ artistHasNoHighValenceTracks: false, isNoHighValenceTracksDialogOpen: true })
-      return
+    const highValenceTracks = []
+    await this.addHighValenceTracksForArtist({ artist, highValenceTracks, isRelatedArtist: false })
+
+    const { artists: relatedArtists } = await this.spotifyApi.getArtistRelatedArtists(artist.id)
+    let artistIndex = 0
+    while (highValenceTracks.length < MAX_PLAYLIST_LENGTH) {
+      await this.addHighValenceTracksForArtist({ artist: relatedArtists[artistIndex], highValenceTracks, isRelatedArtist: true })
+      artistIndex++
     }
-    // console.time('Related artists time')
-    await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[0])
-    await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[1])
-    await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[2])
-    await this.addHighValenceTracksFromRelatedArtists(relatedArtists.artists[3])
-    // console.timeEnd('Related artists time')
-    await this.createPlaylistAndAddSongs(artist.name)
+
+    await this.createPlaylist(artist.name, highValenceTracks)
+  }
+  addHighValenceTracksForArtist = async ({ artist, highValenceTracks, isRelatedArtist }) => {
+    if (highValenceTracks.length > MAX_PLAYLIST_LENGTH) return
+
+    const { items: albums } = await this.spotifyApi.getArtistAlbums(artist.id, { limit: isRelatedArtist ? 3 : 5 })
+    return promise.each(albums, async album => {
+      if (highValenceTracks.length > MAX_PLAYLIST_LENGTH) return
+
+      const { items: albumTracks } = await this.spotifyApi.getAlbumTracks(album.id)
+      const { audio_features: audioFeatures } = await this.spotifyApi.getAudioFeaturesForTracks(albumTracks.map(track => track.id))
+
+      const highValenceTracksForAlbum = albumTracks.filter((track, index) => {
+        if (highValenceTracks.length > MAX_PLAYLIST_LENGTH) return false
+        if (find(highValenceTracks, highValenceTrack => highValenceTrack.name === track.name)) return false
+
+        return audioFeatures[index].valence >= VALENCE_THRESHOLD
+      })
+      highValenceTracks.push(...highValenceTracksForAlbum)
+
+      const progress = highValenceTracks.length * 100 / 30
+      this.setState({ loadProgress: progress > 100 ? 100 : progress })
+    })
+  }
+  createPlaylist = async (artistName, tracks) => {
+    const { data: liftPlaylist } = await axios.post(
+      'https://api.spotify.com/v1/users/' + this.state.me.id + '/playlists',
+      { name: '(lift) ' + artistName }
+    )
+    // const liftPlaylist = await this.spotifyApi.createPlaylist({ name: '(lift) ' + artistName })
+
+    await this.spotifyApi.addTracksToPlaylist(liftPlaylist.id, shuffle(tracks.map(track => track.uri)))
+    await this.fetchUserData()
   }
 
+  getNoOptionsMessage = inputValue => 'No artists found'
+  getOptionLabel = option => option.name
+  getOptionValue = option => option
+
+  queryArtist = async query => {
+    const queryResults = await this.spotifyApi.searchArtists(query)
+    return queryResults.artists.items
+  }
+
+  handleLogin = async accessToken => {
+    this.spotifyApi.setAccessToken(accessToken)
+    axios.defaults.headers.common.Authorization = 'Bearer ' + accessToken
+    await this.fetchUserData()
+  }
   handleQueryChange = async (selectedArtist, action) => {
     if (action.action === 'select-option') {
       this.setState({ isProgressDialogOpen: true })
-      // console.time('Total time')
       await this.createLiftPlaylist(selectedArtist)
-      // console.timeEnd('Total time')
       this.setState({ isProgressDialogOpen: false, loadProgress: 0 })
     }
   }
-
-  queryArtist = async query => {
-    const queryResults = await this.state.spotifyApi.searchArtists(query)
-    return new Promise(
-      resolve => resolve(queryResults.artists.items)
-    )
-  }
-
   handleCloseNoTrackDialog = () => this.setState({ isNoHighValenceTracksDialogOpen: false })
-
   handlePlaylistClick = selectedPlaylist => this.setState({ selectedPlaylist })
-
   handleDeletePlaylist = playlistId => {
-    this.state.spotifyApi.unfollowPlaylist(playlistId)
+    this.spotifyApi.unfollowPlaylist(playlistId)
     this.setState((prevState) => {
       const updatedPlaylist = prevState.playlists.filter(playlist => playlist.id !== playlistId)
       return {
@@ -171,12 +137,6 @@ export default class extends Component {
       }
     })
   }
-
-  getNoOptionsMessage = inputValue => 'No artists found'
-
-  getOptionLabel = option => option.name
-
-  getOptionValue = option => option
 
   renderSpotifyPlayer() {
     return (
@@ -188,7 +148,6 @@ export default class extends Component {
       </div>
     )
   }
-
   renderNewUserMessage() {
     return (
       <div className="new-user-message-container">
@@ -198,7 +157,6 @@ export default class extends Component {
       </div>
     )
   }
-
   renderLift() {
     return (
       <div>
@@ -230,7 +188,6 @@ export default class extends Component {
       </div>
     )
   }
-
   render() {
     return (
       <div className="main-container">

@@ -7,10 +7,11 @@
     "quotes": ["error", "single"],
     "curly": "off",
     "jsx-quotes": ["error", "prefer-double"],
-    "space-before-function-paren": ["error", { "anonymous": "never", "named": "never", "asyncArrow": "always" }],
+    "lines-between-class-members": "off",
     "no-console": ["error"],
     "no-unused-vars": [2, { "vars": "all", "args": "none", "ignoreRestSiblings": true }],
     "no-unused-expressions": "off",
-    "react/prop-types": [2, { "skipUndeclared": true }]
+    "react/prop-types": [2, { "skipUndeclared": true }],
+    "space-before-function-paren": ["error", { "anonymous": "never", "named": "never", "asyncArrow": "always" }]
   }
 }

@@ -1,4 +1,5 @@
 import { Divider, IconButton, List, ListItem, ListItemSecondaryAction } from '@material-ui/core'
+import DeleteIcon from '@material-ui/icons/Delete'
 import React, { Component } from 'react'
 import { array, func } from 'prop-types'
 
@@ -24,7 +25,7 @@ export default class PlaylistList extends Component {
             {playlist.name.slice(7)}
             <ListItemSecondaryAction>
               <IconButton aria-label="Delete" onClick={() => this.props.onDeletePlaylist(playlist.id)}>
-                {/* <DeleteIcon color="secondary" /> */}
+                <DeleteIcon color="secondary" />
               </IconButton>
             </ListItemSecondaryAction>
           </ListItem>
