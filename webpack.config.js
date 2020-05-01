@@ -5,6 +5,7 @@ const path = require('path')
 const webpack = require('webpack')
 
 module.exports = (env) => {
+  console.log('env:', env)
   const plugins = [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
@@ -22,6 +23,7 @@ module.exports = (env) => {
       agg[`process.env.${property}`] = JSON.stringify(env[property])
       return agg
     }, {})
+    console.log('envKeys:', envKeys)
 
     plugins.push(new webpack.DefinePlugin(envKeys))
   }
