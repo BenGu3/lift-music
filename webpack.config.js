@@ -5,7 +5,6 @@ const path = require('path')
 const webpack = require('webpack')
 
 module.exports = (env) => {
-  console.log('env:', env)
   const plugins = [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
@@ -18,12 +17,11 @@ module.exports = (env) => {
     plugins.push(dotenv)
   }
 
-  if (env.NODE_ENV === 'production') {
-    const envKeys = Object.keys(env).reduce((agg, property) => {
-      agg[`process.env.${property}`] = JSON.stringify(env[property])
+  if (process.env.NODE_ENV === 'production') {
+    const envKeys = Object.keys(process.env).reduce((agg, property) => {
+      agg[`process.env.${property}`] = JSON.stringify(process.env[property])
       return agg
     }, {})
-    console.log('envKeys:', envKeys)
 
     plugins.push(new webpack.DefinePlugin(envKeys))
   }
