@@ -1,60 +1,73 @@
 import Button from '@material-ui/core/Button'
 import { func } from 'prop-types'
-import React, { Component } from 'react'
+import React from 'react'
+import moment from 'moment'
 
 import './index.css'
 
-export default class Login extends Component {
-  static propTypes = {
-    onLogin: func.isRequired
-  }
+const spotifyAccessTokenKey = 'lift_spotify_token'
+const spotifyAccessTokenExpireTimeKey = 'lift_spotify_token_expire_date'
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      accessToken: this.getAccessToken()
-    }
-  }
+function getAccessToken() {
+  const accessToken = window.localStorage.getItem(spotifyAccessTokenKey)
+  const accessTokenExpirationDate = window.localStorage.getItem(spotifyAccessTokenExpireTimeKey)
+  const isTokenExpired = moment() > moment(accessTokenExpirationDate)
 
-  getAccessToken = () => {
-    const hashParams = {}
-    let e
-    const r = /([^&;=]+)=?([^&;]*)/g
-    const q = window.location.hash.substring(1)
+  if (isTokenExpired)
+    redirectToSpotify()
 
-    // eslint-disable-next-line no-cond-assign
-    while (e = r.exec(q)) {
-      hashParams[e[1]] = decodeURIComponent(e[2])
-    }
+  if (accessToken && !isTokenExpired)
+    return accessToken
 
-    return hashParams.access_token
-  }
+  const accessTokenMatch = window.location.href.match(/access_token=([^&]*)/)
+  const expiresInMatch = window.location.href.match(/expires_in=([^&]*)/)
+  if (accessTokenMatch && expiresInMatch) {
+    window.localStorage.setItem(spotifyAccessTokenKey, accessTokenMatch[1])
+    window.localStorage.setItem(spotifyAccessTokenExpireTimeKey, moment().add(expiresInMatch[1], 's').format())
 
-  handleLogin = () => {
-    const url = 'https://accounts.spotify.com/authorize?response_type=token' +
-      '&client_id=' + encodeURIComponent(process.env.spotifyClientId) +
-      '&scope=' + encodeURIComponent(process.env.spotifyApiScope) +
-      '&redirect_uri=' + encodeURIComponent(process.env.redirectUri)
-    window.location = url
-  }
-
-  render() {
-    if (this.state.accessToken) {
-      this.props.onLogin(this.state.accessToken)
-      return (<div />)
-    }
-    return (
-      <div className="header-container">
-        <div className="lift-intro-container">
-          <span className="login-lift-motto">search your favorite artists.</span>
-          <span className="login-lift-motto">access a curated playlist.</span>
-          <span className="login-lift-motto">listen to uplifting music.</span>
-          <span className="login-lift-title">welcome to lift.</span>
-        </div>
-        <Button variant="contained" color="primary" className="login-button" onClick={this.handleLogin}>
-          Login with Spotify
-        </Button>
-      </div>
-    )
+    window.location = process.env.redirectUri
+    return window.localStorage.getItem(spotifyAccessTokenKey)
   }
 }
+
+function handleLogin() {
+  redirectToSpotify()
+}
+
+function redirectToSpotify() {
+  const url = 'https://accounts.spotify.com/authorize?response_type=token' +
+    '&client_id=' + encodeURIComponent(process.env.spotifyClientId) +
+    '&scope=' + encodeURIComponent(process.env.spotifyApiScope) +
+    '&redirect_uri=' + encodeURIComponent(process.env.redirectUri)
+
+  window.location = url
+}
+
+const Login = (props) => {
+  const accessToken = getAccessToken()
+
+  if (accessToken) {
+    props.onLogin(accessToken)
+    return null
+  }
+
+  return (
+    <div className="header-container">
+      <div className="lift-intro-container">
+        <span className="login-lift-motto">search your favorite artists.</span>
+        <span className="login-lift-motto">access a curated playlist.</span>
+        <span className="login-lift-motto">listen to uplifting music.</span>
+        <span className="login-lift-title">welcome to lift.</span>
+      </div>
+      <Button variant="contained" color="primary" className="login-button" onClick={handleLogin}>
+          Login with Spotify
+      </Button>
+    </div>
+  )
+}
+
+Login.propTypes = {
+  onLogin: func.isRequired
+}
+
+export default Login

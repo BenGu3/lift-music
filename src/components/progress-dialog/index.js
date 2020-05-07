@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle, LinearProgress } from '@material-ui/core'
 import React from 'react'
-import { func, number } from 'prop-types'
+import { bool, number } from 'prop-types'
 
 import './index.css'
 
@@ -14,7 +14,7 @@ const ProgressDialog = props => (
 )
 
 ProgressDialog.propTypes = {
-  isOpen: func.isRequired,
+  isOpen: bool.isRequired,
   progress: number.isRequired
 }
 

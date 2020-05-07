@@ -50,7 +50,7 @@ export default class extends Component {
   }
   fetchMe = async () => {
     const me = await this.spotifyApi.getMe()
-    this.setState({ isLoggedIn: true, me })
+    this.setState({ me })
   }
   fetchUserLiftPlaylists = async () => {
     const { items: myPlaylists } = await this.spotifyApi.getUserPlaylists(this.state.me.id)
@@ -116,6 +116,7 @@ export default class extends Component {
   handleLogin = async accessToken => {
     this.spotifyApi.setAccessToken(accessToken)
     axios.defaults.headers.common.Authorization = 'Bearer ' + accessToken
+    this.setState({ isLoggedIn: true })
     await this.fetchUserData()
   }
   handleQueryChange = async (selectedArtist, action) => {

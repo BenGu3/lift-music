@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@material-ui/core'
 import React from 'react'
-import { func } from 'prop-types'
+import { bool, func } from 'prop-types'
 
 import './index.css'
 
@@ -19,7 +19,7 @@ const NoTracksDialog = props => (
 )
 
 NoTracksDialog.propTypes = {
-  isOpen: func.isRequired,
+  isOpen: bool.isRequired,
   onClose: func.isRequired
 }
 
