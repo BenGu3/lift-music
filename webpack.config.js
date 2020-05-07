@@ -1,10 +1,10 @@
+const path = require('path')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const Dotenv = require('dotenv-webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const path = require('path')
 const webpack = require('webpack')
 
-module.exports = (env) => {
+module.exports = env => {
   const plugins = [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
@@ -29,17 +29,25 @@ module.exports = (env) => {
   return {
     mode: 'development',
     entry: {
-      app: './src/index.js'
+      app: './src/index.tsx'
+    },
+    resolve: {
+      extensions: ['.ts', '.tsx', '.js', '.json']
     },
     plugins,
     module: {
       rules: [
         {
-          test: /\.(js|jsx)$/,
+          test: /\.(ts|tsx)$/,
           exclude: /node_modules/,
           use: {
-            loader: 'babel-loader'
+            loader: 'ts-loader'
           }
+        },
+        {
+          enforce: 'pre',
+          test: /\.(js|jsx)$/,
+          loader: 'source-map-loader'
         },
         {
           test: /\.css$/i,
@@ -55,5 +63,9 @@ module.exports = (env) => {
     devServer: {
       contentBase: path.join(__dirname, 'build')
     }
+    // externals: {
+    //   react: 'React',
+    //   'react-dom': 'ReactDOM'
+    // }
   }
 }

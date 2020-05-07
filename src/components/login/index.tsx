@@ -1,7 +1,6 @@
 import Button from '@material-ui/core/Button'
-import { func } from 'prop-types'
-import React from 'react'
-import moment from 'moment'
+import * as moment from 'moment'
+import * as React from 'react'
 
 import './index.css'
 
@@ -24,8 +23,8 @@ function getAccessToken() {
   if (accessTokenMatch && expiresInMatch) {
     window.localStorage.setItem(spotifyAccessTokenKey, accessTokenMatch[1])
     window.localStorage.setItem(spotifyAccessTokenExpireTimeKey, moment().add(expiresInMatch[1], 's').format())
+    window.location.href = process.env.redirectUri
 
-    window.location = process.env.redirectUri
     return window.localStorage.getItem(spotifyAccessTokenKey)
   }
 }
@@ -35,15 +34,15 @@ function handleLogin() {
 }
 
 function redirectToSpotify() {
-  const url = 'https://accounts.spotify.com/authorize?response_type=token' +
-    '&client_id=' + encodeURIComponent(process.env.spotifyClientId) +
-    '&scope=' + encodeURIComponent(process.env.spotifyApiScope) +
-    '&redirect_uri=' + encodeURIComponent(process.env.redirectUri)
+  const url = 'https://accounts.spotify.com/authorize?response_type=token'
+    + '&client_id=' + encodeURIComponent(process.env.spotifyClientId)
+    + '&scope=' + encodeURIComponent(process.env.spotifyApiScope)
+    + '&redirect_uri=' + encodeURIComponent(process.env.redirectUri)
 
-  window.location = url
+  window.location.href = url
 }
 
-const Login = (props) => {
+export default function Login(props: LoginProps) {
   const accessToken = getAccessToken()
 
   if (accessToken) {
@@ -52,22 +51,20 @@ const Login = (props) => {
   }
 
   return (
-    <div className="header-container">
-      <div className="lift-intro-container">
-        <span className="login-lift-motto">search your favorite artists.</span>
-        <span className="login-lift-motto">access a curated playlist.</span>
-        <span className="login-lift-motto">listen to uplifting music.</span>
-        <span className="login-lift-title">welcome to lift.</span>
+    <div className='header-container'>
+      <div className='lift-intro-container'>
+        <span className='login-lift-motto'>search your favorite artists.</span>
+        <span className='login-lift-motto'>access a curated playlist.</span>
+        <span className='login-lift-motto'>listen to uplifting music.</span>
+        <span className='login-lift-title'>welcome to lift.</span>
       </div>
-      <Button variant="contained" color="primary" className="login-button" onClick={handleLogin}>
-          Login with Spotify
+      <Button variant='contained' color='primary' className='login-button' onClick={handleLogin}>
+        Login with Spotify
       </Button>
     </div>
   )
 }
 
-Login.propTypes = {
-  onLogin: func.isRequired
+interface LoginProps {
+  onLogin: (accessToken: string) => void
 }
-
-export default Login
