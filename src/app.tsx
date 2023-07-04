@@ -1,6 +1,6 @@
 import { DateTime, Duration } from 'luxon'
 import { FC, lazy, useEffect, useState } from 'react'
-import * as SpotifyWebApiJs from 'spotify-web-api-js'
+import SpotifyWebApiJs from 'spotify-web-api-js'
 
 const Login = lazy(() => import('./pages/login'))
 const Home = lazy(() => import('./pages/home'))
@@ -8,12 +8,28 @@ const Home = lazy(() => import('./pages/home'))
 const spotifyAccessTokenKey = 'lift_spotify_token'
 const spotifyAccessTokenExpireTimeKey = 'lift_spotify_token_expire_date'
 
-function getAccessToken() {
-  const accessTokenMatch = window.location.href.match(/access_token=([^&]*)/)
-  const expiresInMatch = window.location.href.match(/expires_in=([^&]*)/)
-  if (accessTokenMatch && expiresInMatch) {
-    window.localStorage.setItem(spotifyAccessTokenKey, accessTokenMatch[1])
-    window.localStorage.setItem(spotifyAccessTokenExpireTimeKey, DateTime.now().plus(Duration.fromMillis(parseInt(expiresInMatch[1]) * 1000)).toISO())
+const parseHashParams = (url: string) => {
+  const urlObj = new URL(url)
+  const hash = urlObj.hash.slice(1)
+  const searchParams = new URLSearchParams(hash)
+
+  return Array.from(searchParams.entries()).reduce<Record<string, string>>((params, [key, value]) => {
+    params[key] = value;
+    return params;
+  }, {});
+}
+
+const getAccessToken = () => {
+  const hashParams = parseHashParams(window.location.href)
+  const expiresInParam = hashParams['expires_in']
+  const accessTokenParam = hashParams['access_token']
+  if (expiresInParam && accessTokenParam) {
+    const duration = Duration.fromMillis(parseInt(expiresInParam) * 1000)
+    console.log('duration', duration)
+    const expiresTime = DateTime.now().plus(duration).toISO() ?? ''
+    console.log('expiresTime', expiresTime)
+    window.localStorage.setItem(spotifyAccessTokenExpireTimeKey, expiresTime)
+    window.localStorage.setItem(spotifyAccessTokenKey, accessTokenParam)
     window.history.replaceState(null, '', import.meta.env.VITE_REDIRECT_URI)
 
     return window.localStorage.getItem(spotifyAccessTokenKey)
@@ -21,7 +37,7 @@ function getAccessToken() {
 
   const accessToken = window.localStorage.getItem(spotifyAccessTokenKey)
   const accessTokenExpirationDate = window.localStorage.getItem(spotifyAccessTokenExpireTimeKey)
-  const isTokenExpired = DateTime.now() > DateTime.fromISO(accessTokenExpirationDate)
+  const isTokenExpired = accessTokenExpirationDate ? DateTime.now() > DateTime.fromISO(accessTokenExpirationDate) : true
 
   if (isTokenExpired)
     return null
@@ -31,7 +47,7 @@ function getAccessToken() {
 }
 
 const App: FC = () => {
-  const [me, setMe] = useState(null)
+  const [me, setMe] = useState<SpotifyApi.CurrentUsersProfileResponse | null>(null)
   const accessToken = getAccessToken()
 
   useEffect(() => {
@@ -39,17 +55,17 @@ const App: FC = () => {
 
     const spotifyApi = new SpotifyWebApiJs()
     spotifyApi.setAccessToken(accessToken)
-    spotifyApi.getMe().then(setMe)
+    spotifyApi.getMe().then(me => setMe(me))
   }, [accessToken])
 
   if (!accessToken)
-    return <Login />
+    return <Login/>
 
   if (!me) {
     return null
   }
 
-  return <Home me={me} accessToken={accessToken} />
+  return <Home me={me} accessToken={accessToken}/>
 }
 
 export default App

@@ -1,10 +1,9 @@
 import AsyncSelect from 'react-select/async'
-import * as React from 'react'
 import { ActionMeta, components, DropdownIndicatorProps } from 'react-select'
 import Search from '@mui/icons-material/Search'
 import { AsyncProps } from 'react-select/src/Async'
 
-const DropdownIndicator = (props: DropdownIndicatorProps) => {
+const DropdownIndicator = (props: DropdownIndicatorProps<SpotifyApi.ArtistObjectFull>) => {
   return (
     <components.DropdownIndicator {...props}>
       <Search />
@@ -22,8 +21,8 @@ const ArtistSearch = (props: Props) => {
   const getOptionLabel = (option: SpotifyApi.ArtistObjectFull): string => option.name
   const getOptionValue = (option: SpotifyApi.ArtistObjectFull): string => option as unknown as string
 
-  const handleQueryChange = async (selectedArtist: SpotifyApi.ArtistObjectFull, action: ActionMeta<SpotifyApi.ArtistObjectFull>) => {
-    if (action.action === 'select-option') {
+  const handleQueryChange = async (selectedArtist: SpotifyApi.ArtistObjectFull | null, action: ActionMeta<SpotifyApi.ArtistObjectFull>) => {
+    if (action.action === 'select-option' && selectedArtist) {
       props.onChange(selectedArtist)
     }
   }
@@ -36,10 +35,11 @@ const ArtistSearch = (props: Props) => {
       onChange={handleQueryChange}
       loadOptions={props.loadArtists}
       isClearable
+      isMulti={false}
       noOptionsMessage={getNoOptionsMessage}
       getOptionLabel={getOptionLabel}
       getOptionValue={getOptionValue}
-      value=""
+      value={null}
     />
   )
 }

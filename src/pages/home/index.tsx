@@ -1,7 +1,9 @@
 import axios from 'axios'
 import * as promise from 'bluebird'
-import { debounce, find, shuffle } from 'lodash'
-import * as SpotifyWebApiJs from 'spotify-web-api-js'
+import debounce from 'lodash/debounce'
+import find from 'lodash/find'
+import shuffle from 'lodash/shuffle'
+import SpotifyWebApiJs from 'spotify-web-api-js'
 import { FC, useEffect, useState } from 'react'
 
 import NoTracksDialog from '../../components/no-tracks-dialog'
@@ -25,8 +27,8 @@ const Home: FC<Props> = props => {
   spotifyApi.setAccessToken(props.accessToken)
   axios.defaults.headers.common.Authorization = 'Bearer ' + props.accessToken
 
-  const [playlists, setPlaylists] = useState([])
-  const [selectedPlaylist, setSelectedPlaylist] = useState(null)
+  const [playlists, setPlaylists] = useState<SpotifyApi.PlaylistObjectSimplified[]>([])
+  const [selectedPlaylist, setSelectedPlaylist] = useState<SpotifyApi.PlaylistObjectSimplified | null>(null)
   const [loadProgress, setLoadProgress] = useState(0)
   const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false)
   const [isNoHighValenceTracksDialogOpen, setIsNoHighValenceTracksDialogOpen] = useState(false)
@@ -116,6 +118,8 @@ const Home: FC<Props> = props => {
   }
 
   const renderSpotifyPlayer = () =>  {
+    if (!selectedPlaylist) return null
+
     return (
       <div className='spotify-player'>
         <SpotifyPlayer uri={selectedPlaylist.uri} />
@@ -146,7 +150,7 @@ const Home: FC<Props> = props => {
       />
       <div className='container'>
         <ArtistSearch onChange={handleQueryChange} loadArtists={debouncedQueryArtist}/>
-        {playlists.length ? renderSpotifyPlayer() : renderNewUserMessage()}
+        {selectedPlaylist ? renderSpotifyPlayer() : renderNewUserMessage()}
       </div>
     </div>
   )

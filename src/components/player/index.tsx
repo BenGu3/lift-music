@@ -10,7 +10,6 @@ const SpotifyPlayer = (props: SpotifyPlayerProps) => (
     width='100%'
     height='700px'
     frameBorder='0'
-    allowTransparency
   />
 )
 export default SpotifyPlayer
