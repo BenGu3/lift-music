@@ -1,6 +1,5 @@
-import Button from '@material-ui/core/Button'
-import * as moment from 'moment'
-import * as React from 'react'
+import Button from '@mui/material/Button'
+import { DateTime } from 'luxon'
 
 import './index.css'
 
@@ -10,7 +9,7 @@ const spotifyAccessTokenExpireTimeKey = 'lift_spotify_token_expire_date'
 function getAccessToken() {
   const accessToken = window.localStorage.getItem(spotifyAccessTokenKey)
   const accessTokenExpirationDate = window.localStorage.getItem(spotifyAccessTokenExpireTimeKey)
-  const isTokenExpired = moment() > moment(accessTokenExpirationDate)
+  const isTokenExpired = DateTime.now() > DateTime.fromISO(accessTokenExpirationDate)
 
   if (isTokenExpired)
     redirectToSpotify()
@@ -22,8 +21,8 @@ function getAccessToken() {
   const expiresInMatch = window.location.href.match(/expires_in=([^&]*)/)
   if (accessTokenMatch && expiresInMatch) {
     window.localStorage.setItem(spotifyAccessTokenKey, accessTokenMatch[1])
-    window.localStorage.setItem(spotifyAccessTokenExpireTimeKey, moment().add(expiresInMatch[1], 's').format())
-    window.location.href = process.env.redirectUri
+    window.localStorage.setItem(spotifyAccessTokenExpireTimeKey, DateTime.now().plus(parseInt(expiresInMatch[1])).toISO())
+    window.location.href = import.meta.env.VITE_REDIRECT_URI
 
     return window.localStorage.getItem(spotifyAccessTokenKey)
   }
@@ -35,9 +34,9 @@ function handleLogin() {
 
 function redirectToSpotify() {
   const url = 'https://accounts.spotify.com/authorize?response_type=token'
-    + '&client_id=' + encodeURIComponent(process.env.spotifyClientId)
-    + '&scope=' + encodeURIComponent(process.env.spotifyApiScope)
-    + '&redirect_uri=' + encodeURIComponent(process.env.redirectUri)
+    + '&client_id=' + encodeURIComponent(import.meta.env.VITE_SPOTIFY_CLIENT_ID)
+    + '&scope=' + encodeURIComponent(import.meta.env.VITE_SPOTIFY_API_SCOPE)
+    + '&redirect_uri=' + encodeURIComponent(import.meta.env.VITE_REDIRECT_URI)
 
   window.location.href = url
 }

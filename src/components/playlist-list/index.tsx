@@ -1,6 +1,5 @@
-import { Divider, IconButton, List, ListItem, ListItemSecondaryAction } from '@material-ui/core'
-import DeleteIcon from '@material-ui/icons/Delete'
-import * as React from 'react'
+import { Divider, IconButton, List, ListItem, ListItemSecondaryAction } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 import './index.css'
 

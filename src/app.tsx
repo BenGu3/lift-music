@@ -1,9 +1,9 @@
-import { Search } from '@material-ui/icons'
+import Search from '@mui/icons-material/Search'
 import axios from 'axios'
 import * as promise from 'bluebird'
 import { find, shuffle } from 'lodash'
+import { components, DropdownIndicatorProps } from 'react-select'
 import * as React from 'react'
-import { components } from 'react-select'
 import type { ActionMeta } from 'react-select'
 import AsyncSelect from 'react-select/async'
 import * as SpotifyWebApiJs from 'spotify-web-api-js'
@@ -19,8 +19,8 @@ import './app.css'
 const VALENCE_THRESHOLD = 0.6
 const MAX_PLAYLIST_LENGTH = 30
 
-function DropdownIndicator(props: any) {
-  return components.DropdownIndicator && (
+const DropdownIndicator = (props: DropdownIndicatorProps) => {
+  return (
     <components.DropdownIndicator {...props}>
       <Search />
     </components.DropdownIndicator>
@@ -38,10 +38,10 @@ interface AppState {
   selectedPlaylist: SpotifyApi.PlaylistObjectSimplified
 }
 
-export default class extends React.Component<{}, AppState> {
-  spotifyApi: any = null
+export default class extends React.Component<never, AppState> {
+  spotifyApi: SpotifyWebApiJs.SpotifyWebApiJs = null
 
-  constructor(props: any) {
+  constructor(props: never) {
     super(props)
     this.spotifyApi = new SpotifyWebApiJs()
     this.state = {
@@ -118,8 +118,8 @@ export default class extends React.Component<{}, AppState> {
   }
 
   getNoOptionsMessage = (): string => 'No artists found'
-  getOptionLabel = (option: any): string => option.name
-  getOptionValue = (option: any): any => option
+  getOptionLabel = (option: SpotifyApi.ArtistObjectFull): string => option.name
+  getOptionValue = (option: SpotifyApi.ArtistObjectFull): string => option as unknown as string
 
   queryArtist = async (query: string): Promise<SpotifyApi.ArtistObjectFull[]> => {
     const queryResults = await this.spotifyApi.searchArtists(query)

@@ -1,5 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, LinearProgress } from '@material-ui/core'
-import * as React from 'react'
+import { Dialog, DialogContent, DialogTitle, LinearProgress } from '@mui/material'
 
 import './index.css'
 

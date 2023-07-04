@@ -1,23 +1,20 @@
-import { createMuiTheme, MuiThemeProvider } from '@material-ui/core'
-import * as React from 'react'
-import * as ReactDOM from 'react-dom'
+import { createTheme, ThemeProvider } from '@mui/material/styles'
+import { createRoot } from 'react-dom/client';
 
 import './index.css'
 import App from './app'
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: { main: '#125ec8' },
     secondary: { main: '#f2f5f7' }
   },
-  typography: {
-    useNextVariants: true
-  }
 })
 
-ReactDOM.render(
-  <MuiThemeProvider theme={theme}>
+const root = createRoot(document.getElementById('root'))
+
+root.render(
+  <ThemeProvider theme={theme}>
     <App />
-  </MuiThemeProvider>,
-  document.getElementById('root')
+  </ThemeProvider>
 )

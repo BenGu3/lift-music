@@ -3,11 +3,11 @@
 /node_modules
 
 # production
-/build
+/dist
 
 # misc
 .DS_Store
 .env
-.env.dev
+.env.local
 
 npm-debug.log*
