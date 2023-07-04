@@ -1,8 +1,8 @@
 import axios from 'axios'
 import * as promise from 'bluebird'
 import { find, shuffle } from 'lodash'
-import * as React from 'react'
 import * as SpotifyWebApiJs from 'spotify-web-api-js'
+import { FC, useEffect, useState } from 'react'
 
 import NoTracksDialog from '../../components/no-tracks-dialog'
 import SpotifyPlayer from '../../components/player'
@@ -15,81 +15,56 @@ import './index.css'
 const VALENCE_THRESHOLD = 0.6
 const MAX_PLAYLIST_LENGTH = 30
 
-interface AppProps {
+type Props = {
   accessToken: string
+  me: SpotifyApi.CurrentUsersProfileResponse
 }
 
-interface AppState {
-  isCreatingPlaylist: boolean,
-  isNoHighValenceTracksDialogOpen: boolean,
-  isProgressDialogOpen: boolean,
-  me: SpotifyApi.CurrentUsersProfileResponse,
-  playlists: SpotifyApi.PlaylistObjectSimplified[],
-  loadProgress: number,
-  selectedPlaylist: SpotifyApi.PlaylistObjectSimplified
-}
+const Home: FC<Props> = props => {
+  const spotifyApi = new SpotifyWebApiJs()
+  spotifyApi.setAccessToken(props.accessToken)
+  axios.defaults.headers.common.Authorization = 'Bearer ' + props.accessToken
 
-export default class extends React.Component<AppProps, AppState> {
-  spotifyApi: SpotifyWebApiJs.SpotifyWebApiJs = null
+  const [playlists, setPlaylists] = useState([])
+  const [selectedPlaylist, setSelectedPlaylist] = useState(null)
+  const [loadProgress, setLoadProgress] = useState(0)
+  const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false)
+  const [isNoHighValenceTracksDialogOpen, setIsNoHighValenceTracksDialogOpen] = useState(false)
 
-  constructor(props: AppProps) {
-    super(props)
-    this.spotifyApi = new SpotifyWebApiJs()
-    this.spotifyApi.setAccessToken(props.accessToken)
-    axios.defaults.headers.common.Authorization = 'Bearer ' + props.accessToken
+  useEffect(() => {
+    fetchUserLiftPlaylists()
+  }, [])
 
-    this.state = {
-      isCreatingPlaylist: false,
-      isNoHighValenceTracksDialogOpen: false,
-      isProgressDialogOpen: false,
-      me: null,
-      playlists: [],
-      loadProgress: 0,
-      selectedPlaylist: null
-    }
-  }
-
-  async componentDidMount() {
-    await this.fetchUserData()
-  }
-
-  fetchUserData = async (): Promise<void> => {
-    await this.fetchMe()
-    await this.fetchUserLiftPlaylists()
-  }
-  fetchMe = async (): Promise<void> => {
-    const me = await this.spotifyApi.getMe()
-    this.setState({ me })
-  }
-  fetchUserLiftPlaylists = async (): Promise<void> => {
-    const { items: myPlaylists } = await this.spotifyApi.getUserPlaylists(this.state.me.id)
+  const fetchUserLiftPlaylists = async (): Promise<void> => {
+    const { items: myPlaylists } = await spotifyApi.getUserPlaylists(props.me.id)
     const playlists = myPlaylists.filter((playlist: SpotifyApi.PlaylistObjectSimplified) => playlist.name.includes('(lift)'))
-    this.setState({ playlists, selectedPlaylist: playlists[0] || null })
+    setPlaylists(playlists)
+    setSelectedPlaylist(playlists[0] || null)
   }
 
-  createLiftPlaylist = async (artist: SpotifyApi.ArtistObjectFull): Promise<void> => {
+  const createLiftPlaylist = async (artist: SpotifyApi.ArtistObjectFull): Promise<void> => {
     const highValenceTracks: SpotifyApi.TrackObjectSimplified[] = []
-    await this.addHighValenceTracksForArtist({ artist, highValenceTracks, isRelatedArtist: false })
+    await addHighValenceTracksForArtist({ artist, highValenceTracks, isRelatedArtist: false })
 
-    const { artists: relatedArtists } = await this.spotifyApi.getArtistRelatedArtists(artist.id)
+    const { artists: relatedArtists } = await spotifyApi.getArtistRelatedArtists(artist.id)
     let artistIndex = 0
     while (highValenceTracks.length < MAX_PLAYLIST_LENGTH) {
-      await this.addHighValenceTracksForArtist({ artist: relatedArtists[artistIndex], highValenceTracks, isRelatedArtist: true })
+      await addHighValenceTracksForArtist({ artist: relatedArtists[artistIndex], highValenceTracks, isRelatedArtist: true })
       artistIndex++
     }
 
-    await this.createPlaylist(artist.name, highValenceTracks)
+    await createPlaylist(artist.name, highValenceTracks)
   }
-  addHighValenceTracksForArtist = async (params: { artist: SpotifyApi.ArtistObjectFull, highValenceTracks: SpotifyApi.TrackObjectSimplified[], isRelatedArtist: boolean }): Promise<void> => {
+  const addHighValenceTracksForArtist = async (params: { artist: SpotifyApi.ArtistObjectFull, highValenceTracks: SpotifyApi.TrackObjectSimplified[], isRelatedArtist: boolean }): Promise<void> => {
     const { artist, highValenceTracks, isRelatedArtist } = params
     if (highValenceTracks.length > MAX_PLAYLIST_LENGTH) return
 
-    const { items: albums } = await this.spotifyApi.getArtistAlbums(artist.id, { limit: isRelatedArtist ? 3 : 5 })
+    const { items: albums } = await spotifyApi.getArtistAlbums(artist.id, { limit: isRelatedArtist ? 3 : 5 })
     await promise.each(albums, async (album: SpotifyApi.AlbumObjectSimplified) => {
       if (highValenceTracks.length > MAX_PLAYLIST_LENGTH) return
 
-      const { items: albumTracks } = await this.spotifyApi.getAlbumTracks(album.id)
-      const { audio_features: audioFeatures } = await this.spotifyApi.getAudioFeaturesForTracks(albumTracks.map((track: SpotifyApi.TrackObjectSimplified) => track.id))
+      const { items: albumTracks } = await spotifyApi.getAlbumTracks(album.id)
+      const { audio_features: audioFeatures } = await spotifyApi.getAudioFeaturesForTracks(albumTracks.map((track: SpotifyApi.TrackObjectSimplified) => track.id))
 
       const highValenceTracksForAlbum = albumTracks.filter((track: SpotifyApi.TrackObjectSimplified, index: number) => {
         if (highValenceTracks.length > MAX_PLAYLIST_LENGTH) return false
@@ -100,51 +75,48 @@ export default class extends React.Component<AppProps, AppState> {
       highValenceTracks.push(...highValenceTracksForAlbum)
 
       const progress = highValenceTracks.length * 100 / 30
-      this.setState({ loadProgress: progress > 100 ? 100 : progress })
+      setLoadProgress(progress > 100 ? 100 : progress)
     })
   }
-  createPlaylist = async (artistName: string, tracks: SpotifyApi.TrackObjectSimplified[]): Promise<void> => {
+  const createPlaylist = async (artistName: string, tracks: SpotifyApi.TrackObjectSimplified[]): Promise<void> => {
     const { data: liftPlaylist } = await axios.post(
-      'https://api.spotify.com/v1/users/' + this.state.me.id + '/playlists',
+      'https://api.spotify.com/v1/users/' + props.me.id + '/playlists',
       { name: '(lift) ' + artistName }
     )
-    // const liftPlaylist = await this.spotifyApi.createPlaylist({ name: '(lift) ' + artistName })
+    // const liftPlaylist = await spotifyApi.createPlaylist({ name: '(lift) ' + artistName })
 
-    await this.spotifyApi.addTracksToPlaylist(liftPlaylist.id, shuffle(tracks.map(track => track.uri)))
-    await this.fetchUserData()
+    await spotifyApi.addTracksToPlaylist(liftPlaylist.id, shuffle(tracks.map(track => track.uri)))
+    await fetchUserLiftPlaylists()
   }
 
-  queryArtist = async (query: string): Promise<SpotifyApi.ArtistObjectFull[]> => {
-    const queryResults = await this.spotifyApi.searchArtists(query)
+  const queryArtist = async (query: string): Promise<SpotifyApi.ArtistObjectFull[]> => {
+    const queryResults = await spotifyApi.searchArtists(query)
     return queryResults.artists.items
   }
 
-  handleQueryChange = async (selectedArtist: SpotifyApi.ArtistObjectFull) => {
-    this.setState({ isProgressDialogOpen: true })
-    await this.createLiftPlaylist(selectedArtist)
-    this.setState({ isProgressDialogOpen: false, loadProgress: 0 })
+  const handleQueryChange = async (selectedArtist: SpotifyApi.ArtistObjectFull) => {
+    setIsProgressDialogOpen(true)
+    await createLiftPlaylist(selectedArtist)
+    setIsProgressDialogOpen(false)
+    setLoadProgress(0)
   }
-  handleCloseNoTrackDialog = () => this.setState({ isNoHighValenceTracksDialogOpen: false })
-  handlePlaylistClick = (selectedPlaylist: SpotifyApi.PlaylistObjectSimplified): void => this.setState({ selectedPlaylist })
-  handleDeletePlaylist = (playlistId: string): void => {
-    this.spotifyApi.unfollowPlaylist(playlistId)
-    this.setState(prevState => {
-      const updatedPlaylist = prevState.playlists.filter(playlist => playlist.id !== playlistId)
-      return {
-        playlists: updatedPlaylist,
-        selectedPlaylist: updatedPlaylist[0]
-      }
-    })
+  const handleCloseNoTrackDialog = () => setIsNoHighValenceTracksDialogOpen(false)
+  const handlePlaylistClick = (selectedPlaylist: SpotifyApi.PlaylistObjectSimplified): void => setSelectedPlaylist(selectedPlaylist)
+  const handleDeletePlaylist = (playlistId: string): void => {
+    spotifyApi.unfollowPlaylist(playlistId)
+    const updatedPlaylists = playlists.filter(playlist => playlist.id !== playlistId)
+    setPlaylists(updatedPlaylists)
+    setSelectedPlaylist(updatedPlaylists[0] || null)
   }
 
-  renderSpotifyPlayer() {
+  const renderSpotifyPlayer = () =>  {
     return (
       <div className='spotify-player'>
-        <SpotifyPlayer uri={this.state.selectedPlaylist.uri} />
+        <SpotifyPlayer uri={selectedPlaylist.uri} />
       </div>
     )
   }
-  renderNewUserMessage() {
+  const renderNewUserMessage = () =>  {
     return (
       <div className='new-user-message-container'>
         <span className='motto'>search your favorite artists.</span>
@@ -153,24 +125,25 @@ export default class extends React.Component<AppProps, AppState> {
       </div>
     )
   }
-  render() {
-    return (
-      <div className='main-container'>
-        <ProgressDialog isOpen={this.state.isProgressDialogOpen} progress={this.state.loadProgress} />
-        <NoTracksDialog
-          isOpen={this.state.isNoHighValenceTracksDialogOpen}
-          onClose={this.handleCloseNoTrackDialog}
-        />
-        <PlaylistList
-          playlists={this.state.playlists}
-          onPlaylistClick={this.handlePlaylistClick}
-          onDeletePlaylist={this.handleDeletePlaylist}
-        />
-        <div className='container'>
-          <ArtistSearch onChange={this.handleQueryChange} loadArtists={this.queryArtist}/>
-          {this.state.playlists.length ? this.renderSpotifyPlayer() : this.renderNewUserMessage()}
-        </div>
+
+  return (
+    <div className='main-container'>
+      <ProgressDialog isOpen={isProgressDialogOpen} progress={loadProgress} />
+      <NoTracksDialog
+        isOpen={isNoHighValenceTracksDialogOpen}
+        onClose={handleCloseNoTrackDialog}
+      />
+      <PlaylistList
+        playlists={playlists}
+        onPlaylistClick={handlePlaylistClick}
+        onDeletePlaylist={handleDeletePlaylist}
+      />
+      <div className='container'>
+        <ArtistSearch onChange={handleQueryChange} loadArtists={queryArtist}/>
+        {playlists.length ? renderSpotifyPlayer() : renderNewUserMessage()}
       </div>
-    )
-  }
+    </div>
+  )
 }
+
+export default Home

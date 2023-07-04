@@ -1,5 +1,6 @@
 import { DateTime, Duration } from 'luxon'
-import { FC, lazy } from 'react'
+import { FC, lazy, useEffect, useState } from 'react'
+import * as SpotifyWebApiJs from 'spotify-web-api-js'
 
 const Login = lazy(() => import('./pages/login'))
 const Home = lazy(() => import('./pages/home'))
@@ -30,12 +31,25 @@ function getAccessToken() {
 }
 
 const App: FC = () => {
+  const [me, setMe] = useState(null)
   const accessToken = getAccessToken()
+
+  useEffect(() => {
+    if (!accessToken) return
+
+    const spotifyApi = new SpotifyWebApiJs()
+    spotifyApi.setAccessToken(accessToken)
+    spotifyApi.getMe().then(setMe)
+  }, [accessToken])
 
   if (!accessToken)
     return <Login />
 
-  return <Home accessToken={accessToken} />
+  if (!me) {
+    return null
+  }
+
+  return <Home me={me} accessToken={accessToken} />
 }
 
 export default App
