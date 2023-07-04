@@ -1,8 +1,8 @@
 import { DateTime, Duration } from 'luxon'
-import { FC } from 'react'
+import { FC, lazy } from 'react'
 
-import Login from './pages/login'
-import Home from './pages/home'
+const Login = lazy(() => import('./pages/login'))
+const Home = lazy(() => import('./pages/home'))
 
 const spotifyAccessTokenKey = 'lift_spotify_token'
 const spotifyAccessTokenExpireTimeKey = 'lift_spotify_token_expire_date'
