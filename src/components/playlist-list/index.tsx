@@ -3,30 +3,36 @@ import DeleteIcon from '@mui/icons-material/Delete'
 
 import './index.css'
 
-const renderPlaylists = (props: PlaylistListProps) => {
-  return props.playlists.map((playlist, index) => {
-    return (
-      <div key={playlist.name}>
-        <ListItem
-          button
-          className="playlist-button"
-          onClick={() => props.onPlaylistClick(playlist)}
-          key={playlist.name}
-        >
-          {playlist.name.slice(7)}
-          <ListItemSecondaryAction>
-            <IconButton aria-label="Delete" onClick={() => props.onDeletePlaylist(playlist.id)}>
-              <DeleteIcon color="secondary" />
-            </IconButton>
-          </ListItemSecondaryAction>
-        </ListItem>
-        {index < props.playlists.length - 1 && (<Divider className="white-divider" />)}
-      </div>
-    )
-  })
+type PlaylistListProps = {
+  playlists: SpotifyApi.PlaylistObjectSimplified[],
+  onPlaylistClick: (playlist: SpotifyApi.PlaylistObjectSimplified) => void,
+  onDeletePlaylist: (playlistId: string) => void
 }
 
-export default function PlaylistListWrapper(props: PlaylistListProps) {
+const PlaylistListWrapper = (props: PlaylistListProps) => {
+  const renderPlaylists = (props: PlaylistListProps) => {
+    return props.playlists.map((playlist, index) => {
+      return (
+        <div key={playlist.name}>
+          <ListItem
+            button
+            className="playlist-button"
+            onClick={() => props.onPlaylistClick(playlist)}
+            key={playlist.name}
+          >
+            {playlist.name.slice(7)}
+            <ListItemSecondaryAction>
+              <IconButton aria-label="Delete" onClick={() => props.onDeletePlaylist(playlist.id)}>
+                <DeleteIcon color="secondary"/>
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>
+          {index < props.playlists.length - 1 && (<Divider className="white-divider"/>)}
+        </div>
+      )
+    })
+  }
+
   return (
     <div className="playlist-list">
       <List>
@@ -43,8 +49,4 @@ export default function PlaylistListWrapper(props: PlaylistListProps) {
   )
 }
 
-interface PlaylistListProps {
-  playlists: SpotifyApi.PlaylistObjectSimplified[],
-  onPlaylistClick: (playlist: SpotifyApi.PlaylistObjectSimplified) => void,
-  onDeletePlaylist: (playlistId: string) => void
-}
+export default PlaylistListWrapper
