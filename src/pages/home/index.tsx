@@ -1,30 +1,19 @@
-import Search from '@mui/icons-material/Search'
 import axios from 'axios'
 import * as promise from 'bluebird'
 import { find, shuffle } from 'lodash'
-import { components, DropdownIndicatorProps } from 'react-select'
 import * as React from 'react'
-import type { ActionMeta } from 'react-select'
-import AsyncSelect from 'react-select/async'
 import * as SpotifyWebApiJs from 'spotify-web-api-js'
 
 import NoTracksDialog from '../../components/no-tracks-dialog'
 import SpotifyPlayer from '../../components/player'
 import PlaylistList from '../../components/playlist-list'
 import ProgressDialog from '../../components/progress-dialog'
+import ArtistSearch from '../../components/artist-search'
 
 import './index.css'
 
 const VALENCE_THRESHOLD = 0.6
 const MAX_PLAYLIST_LENGTH = 30
-
-const DropdownIndicator = (props: DropdownIndicatorProps) => {
-  return (
-    <components.DropdownIndicator {...props}>
-      <Search />
-    </components.DropdownIndicator>
-  )
-}
 
 interface AppProps {
   accessToken: string
@@ -125,21 +114,15 @@ export default class extends React.Component<AppProps, AppState> {
     await this.fetchUserData()
   }
 
-  getNoOptionsMessage = (): string => 'No artists found'
-  getOptionLabel = (option: SpotifyApi.ArtistObjectFull): string => option.name
-  getOptionValue = (option: SpotifyApi.ArtistObjectFull): string => option as unknown as string
-
   queryArtist = async (query: string): Promise<SpotifyApi.ArtistObjectFull[]> => {
     const queryResults = await this.spotifyApi.searchArtists(query)
     return queryResults.artists.items
   }
 
-  handleQueryChange = async (selectedArtist: SpotifyApi.ArtistObjectFull, action: ActionMeta<SpotifyApi.ArtistObjectFull>) => {
-    if (action.action === 'select-option') {
-      this.setState({ isProgressDialogOpen: true })
-      await this.createLiftPlaylist(selectedArtist)
-      this.setState({ isProgressDialogOpen: false, loadProgress: 0 })
-    }
+  handleQueryChange = async (selectedArtist: SpotifyApi.ArtistObjectFull) => {
+    this.setState({ isProgressDialogOpen: true })
+    await this.createLiftPlaylist(selectedArtist)
+    this.setState({ isProgressDialogOpen: false, loadProgress: 0 })
   }
   handleCloseNoTrackDialog = () => this.setState({ isNoHighValenceTracksDialogOpen: false })
   handlePlaylistClick = (selectedPlaylist: SpotifyApi.PlaylistObjectSimplified): void => this.setState({ selectedPlaylist })
@@ -184,18 +167,7 @@ export default class extends React.Component<AppProps, AppState> {
           onDeletePlaylist={this.handleDeletePlaylist}
         />
         <div className='container'>
-          <AsyncSelect
-            placeholder='Search your favorite artist'
-            className='search-bar'
-            components={{ DropdownIndicator }}
-            onChange={this.handleQueryChange}
-            loadOptions={this.queryArtist}
-            isClearable
-            noOptionsMessage={this.getNoOptionsMessage}
-            getOptionLabel={this.getOptionLabel}
-            getOptionValue={this.getOptionValue}
-            value=''
-          />
+          <ArtistSearch onChange={this.handleQueryChange} loadArtists={this.queryArtist}/>
           {this.state.playlists.length ? this.renderSpotifyPlayer() : this.renderNewUserMessage()}
         </div>
       </div>
