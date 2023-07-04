@@ -1,6 +1,6 @@
 import axios from 'axios'
 import * as promise from 'bluebird'
-import { find, shuffle } from 'lodash'
+import { debounce, find, shuffle } from 'lodash'
 import * as SpotifyWebApiJs from 'spotify-web-api-js'
 import { FC, useEffect, useState } from 'react'
 
@@ -94,6 +94,12 @@ const Home: FC<Props> = props => {
     return queryResults.artists.items
   }
 
+  const debouncedQueryArtist = debounce((searchTerm, callback) => {
+    queryArtist(searchTerm)
+      .then((result) => callback(result))
+      .catch((error) => callback(error))
+  }, 350)
+
   const handleQueryChange = async (selectedArtist: SpotifyApi.ArtistObjectFull) => {
     setIsProgressDialogOpen(true)
     await createLiftPlaylist(selectedArtist)
@@ -139,7 +145,7 @@ const Home: FC<Props> = props => {
         onDeletePlaylist={handleDeletePlaylist}
       />
       <div className='container'>
-        <ArtistSearch onChange={handleQueryChange} loadArtists={queryArtist}/>
+        <ArtistSearch onChange={handleQueryChange} loadArtists={debouncedQueryArtist}/>
         {playlists.length ? renderSpotifyPlayer() : renderNewUserMessage()}
       </div>
     </div>
