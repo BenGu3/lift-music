@@ -6,7 +6,6 @@ import shuffle from 'lodash/shuffle'
 import SpotifyWebApiJs from 'spotify-web-api-js'
 import { FC, useEffect, useState } from 'react'
 
-import NoTracksDialog from '../../components/no-tracks-dialog'
 import SpotifyPlayer from '../../components/player'
 import PlaylistList from '../../components/playlist-list'
 import ProgressDialog from '../../components/progress-dialog'
@@ -31,7 +30,6 @@ const Home: FC<Props> = props => {
   const [selectedPlaylist, setSelectedPlaylist] = useState<SpotifyApi.PlaylistObjectSimplified | null>(null)
   const [loadProgress, setLoadProgress] = useState(0)
   const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false)
-  const [isNoHighValenceTracksDialogOpen, setIsNoHighValenceTracksDialogOpen] = useState(false)
 
   useEffect(() => {
     fetchUserLiftPlaylists()
@@ -108,7 +106,6 @@ const Home: FC<Props> = props => {
     setIsProgressDialogOpen(false)
     setLoadProgress(0)
   }
-  const handleCloseNoTrackDialog = () => setIsNoHighValenceTracksDialogOpen(false)
   const handlePlaylistClick = (selectedPlaylist: SpotifyApi.PlaylistObjectSimplified): void => setSelectedPlaylist(selectedPlaylist)
   const handleDeletePlaylist = (playlistId: string): void => {
     spotifyApi.unfollowPlaylist(playlistId)
@@ -139,10 +136,6 @@ const Home: FC<Props> = props => {
   return (
     <div className='main-container'>
       <ProgressDialog isOpen={isProgressDialogOpen} progress={loadProgress} />
-      <NoTracksDialog
-        isOpen={isNoHighValenceTracksDialogOpen}
-        onClose={handleCloseNoTrackDialog}
-      />
       <PlaylistList
         playlists={playlists}
         onPlaylistClick={handlePlaylistClick}
