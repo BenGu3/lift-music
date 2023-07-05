@@ -3,9 +3,9 @@ import * as promise from 'bluebird'
 import debounce from 'lodash/debounce'
 import find from 'lodash/find'
 import shuffle from 'lodash/shuffle'
-import SpotifyWebApiJs from 'spotify-web-api-js'
 import { FC, useEffect, useState } from 'react'
 
+import spotifyApi from '../../api/spotify.ts'
 import SpotifyPlayer from '../../components/player'
 import PlaylistList from '../../components/playlist-list'
 import ProgressDialog from '../../components/progress-dialog'
@@ -17,15 +17,10 @@ const VALENCE_THRESHOLD = 0.6
 const MAX_PLAYLIST_LENGTH = 30
 
 type Props = {
-  accessToken: string
   me: SpotifyApi.CurrentUsersProfileResponse
 }
 
 const Home: FC<Props> = props => {
-  const spotifyApi = new SpotifyWebApiJs()
-  spotifyApi.setAccessToken(props.accessToken)
-  axios.defaults.headers.common.Authorization = 'Bearer ' + props.accessToken
-
   const [playlists, setPlaylists] = useState<SpotifyApi.PlaylistObjectSimplified[]>([])
   const [selectedPlaylist, setSelectedPlaylist] = useState<SpotifyApi.PlaylistObjectSimplified | null>(null)
   const [loadProgress, setLoadProgress] = useState(0)

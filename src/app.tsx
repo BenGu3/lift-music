@@ -1,9 +1,10 @@
 import { DateTime, Duration } from 'luxon'
 import { FC, lazy, useEffect, useState } from 'react'
-import SpotifyWebApiJs from 'spotify-web-api-js'
+import axios from 'axios'
 
 const Login = lazy(() => import('./pages/login'))
 const Home = lazy(() => import('./pages/home'))
+import spotifyApi from './api/spotify.ts'
 
 const spotifyAccessTokenKey = 'lift_spotify_token'
 const spotifyAccessTokenExpireTimeKey = 'lift_spotify_token_expire_date'
@@ -25,9 +26,7 @@ const getAccessToken = () => {
   const accessTokenParam = hashParams['access_token']
   if (expiresInParam && accessTokenParam) {
     const duration = Duration.fromMillis(parseInt(expiresInParam) * 1000)
-    console.log('duration', duration)
     const expiresTime = DateTime.now().plus(duration).toISO() ?? ''
-    console.log('expiresTime', expiresTime)
     window.localStorage.setItem(spotifyAccessTokenExpireTimeKey, expiresTime)
     window.localStorage.setItem(spotifyAccessTokenKey, accessTokenParam)
     window.history.replaceState(null, '', import.meta.env.VITE_REDIRECT_URI)
@@ -53,7 +52,7 @@ const App: FC = () => {
   useEffect(() => {
     if (!accessToken) return
 
-    const spotifyApi = new SpotifyWebApiJs()
+    axios.defaults.headers.common.Authorization = 'Bearer ' + accessToken
     spotifyApi.setAccessToken(accessToken)
     spotifyApi.getMe().then(me => setMe(me))
   }, [accessToken])
@@ -65,7 +64,7 @@ const App: FC = () => {
     return null
   }
 
-  return <Home me={me} accessToken={accessToken}/>
+  return <Home me={me}/>
 }
 
 export default App
