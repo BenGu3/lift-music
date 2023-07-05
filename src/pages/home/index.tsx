@@ -109,25 +109,6 @@ const Home: FC<Props> = props => {
     setSelectedPlaylist(updatedPlaylists[0] || null)
   }
 
-  const renderSpotifyPlayer = () =>  {
-    if (!selectedPlaylist) return null
-
-    return (
-      <div className='spotify-player'>
-        <SpotifyPlayer uri={selectedPlaylist.uri} />
-      </div>
-    )
-  }
-  const renderNewUserMessage = () =>  {
-    return (
-      <div className='new-user-message-container'>
-        <span className='motto'>search your favorite artists.</span>
-        <span className='motto'>listen to uplifting music.</span>
-        <span className='title'>welcome to lift.</span>
-      </div>
-    )
-  }
-
   return (
     <div className='main-container'>
       <ProgressDialog isOpen={isProgressDialogOpen} progress={loadProgress} />
@@ -138,7 +119,7 @@ const Home: FC<Props> = props => {
       />
       <div className='container'>
         <ArtistSearch onChange={handleQueryChange} loadArtists={debouncedQueryArtist}/>
-        {selectedPlaylist ? renderSpotifyPlayer() : renderNewUserMessage()}
+        <SpotifyPlayer uri={selectedPlaylist?.uri} />
       </div>
     </div>
   )
