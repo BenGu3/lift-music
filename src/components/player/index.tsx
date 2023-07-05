@@ -1,16 +1,19 @@
+import './index.css'
+
 type SpotifyPlayerProps = {
   uri: string,
 }
 
-const SpotifyPlayer = (props: SpotifyPlayerProps) => (
+const getUrlFromUri = (uri: string): string => {
+  const [_, type, id] = uri.split(':')
+  return `https://open.spotify.com/embed/${type}/${id}`
+}
+
+const SpotifyPlayer = (props: SpotifyPlayerProps) =>
   <iframe
-    title='Spotify'
-    className='SpotifyPlayer'
-    src={`https://embed.spotify.com/?uri=${props.uri}&view=list&theme=black`}
-    width='100%'
-    height='700px'
-    frameBorder='0'
+    title="Spotify Player"
+    className="player"
+    src={getUrlFromUri(props.uri)}
   />
-)
 export default SpotifyPlayer
 
