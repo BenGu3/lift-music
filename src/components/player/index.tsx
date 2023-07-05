@@ -14,6 +14,9 @@ const SpotifyPlayer = (props: SpotifyPlayerProps) =>
     title="Spotify Player"
     className="player"
     src={getUrlFromUri(props.uri)}
+    allow="encrypted-media"
   />
 export default SpotifyPlayer
 
+// TODO add disclaimer when only preview is show
+// https://developer.spotify.com/documentation/embeds/tutorials/troubleshooting
