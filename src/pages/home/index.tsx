@@ -1,88 +1,34 @@
-import axios from 'axios'
-import * as promise from 'bluebird'
 import debounce from 'lodash/debounce'
-import find from 'lodash/find'
-import shuffle from 'lodash/shuffle'
-import { FC, useEffect, useState } from 'react'
+import { FC, useState } from 'react'
+import { IconButton, Typography } from '@mui/material'
+import { SkipNext } from '@mui/icons-material'
 
+import * as api from '../../api'
 import spotifyApi from '../../api/spotify.ts'
 import SpotifyPlayer from '../../components/player'
-import PlaylistList from '../../components/playlist-list'
-import ProgressDialog from '../../components/progress-dialog'
 import ArtistSearch from '../../components/artist-search'
 
 import './index.css'
-
-const VALENCE_THRESHOLD = 0.6
-const MAX_PLAYLIST_LENGTH = 30
+import { useInterval } from '../../hooks/useInterval.ts'
+import { useQueue } from '../../hooks/useQueue.ts'
 
 type Props = {
   me: SpotifyApi.CurrentUsersProfileResponse
 }
 
-const Home: FC<Props> = props => {
-  const [playlists, setPlaylists] = useState<SpotifyApi.PlaylistObjectSimplified[]>([])
-  const [selectedPlaylist, setSelectedPlaylist] = useState<SpotifyApi.PlaylistObjectSimplified | null>(null)
-  const [loadProgress, setLoadProgress] = useState(0)
-  const [isProgressDialogOpen, setIsProgressDialogOpen] = useState(false)
+const MAX_QUEUE_LENGTH = 10
 
-  useEffect(() => {
-    fetchUserLiftPlaylists()
-  }, [])
+const Home: FC<Props> = () => {
+  const [selectedArtist, setSelectedArtist] = useState<SpotifyApi.ArtistObjectFull | null>(null)
+  const [trackUriQueue, trackUriQueueActions] = useQueue<string>()
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null)
 
-  const fetchUserLiftPlaylists = async (): Promise<void> => {
-    const { items: myPlaylists } = await spotifyApi.getUserPlaylists(props.me.id)
-    const playlists = myPlaylists.filter((playlist: SpotifyApi.PlaylistObjectSimplified) => playlist.name.includes('(lift)'))
-    setPlaylists(playlists)
-    setSelectedPlaylist(playlists[0] || null)
-  }
-
-  const createLiftPlaylist = async (artist: SpotifyApi.ArtistObjectFull): Promise<void> => {
-    const highValenceTracks: SpotifyApi.TrackObjectSimplified[] = []
-    await addHighValenceTracksForArtist({ artist, highValenceTracks, isRelatedArtist: false })
-
-    const { artists: relatedArtists } = await spotifyApi.getArtistRelatedArtists(artist.id)
-    let artistIndex = 0
-    while (highValenceTracks.length < MAX_PLAYLIST_LENGTH) {
-      await addHighValenceTracksForArtist({ artist: relatedArtists[artistIndex], highValenceTracks, isRelatedArtist: true })
-      artistIndex++
+  useInterval(async () => {
+    if (selectedArtist && trackUriQueue.length < MAX_QUEUE_LENGTH) {
+      const uris = await api.gather(selectedArtist)
+      trackUriQueueActions.push(uris)
     }
-
-    await createPlaylist(artist.name, highValenceTracks)
-  }
-  const addHighValenceTracksForArtist = async (params: { artist: SpotifyApi.ArtistObjectFull, highValenceTracks: SpotifyApi.TrackObjectSimplified[], isRelatedArtist: boolean }): Promise<void> => {
-    const { artist, highValenceTracks, isRelatedArtist } = params
-    if (highValenceTracks.length > MAX_PLAYLIST_LENGTH) return
-
-    const { items: albums } = await spotifyApi.getArtistAlbums(artist.id, { limit: isRelatedArtist ? 3 : 5 })
-    await promise.each(albums, async (album: SpotifyApi.AlbumObjectSimplified) => {
-      if (highValenceTracks.length > MAX_PLAYLIST_LENGTH) return
-
-      const { items: albumTracks } = await spotifyApi.getAlbumTracks(album.id)
-      const { audio_features: audioFeatures } = await spotifyApi.getAudioFeaturesForTracks(albumTracks.map((track: SpotifyApi.TrackObjectSimplified) => track.id))
-
-      const highValenceTracksForAlbum = albumTracks.filter((track: SpotifyApi.TrackObjectSimplified, index: number) => {
-        if (highValenceTracks.length > MAX_PLAYLIST_LENGTH) return false
-        if (find(highValenceTracks, highValenceTrack => highValenceTrack.name === track.name)) return false
-
-        return audioFeatures[index].valence >= VALENCE_THRESHOLD
-      })
-      highValenceTracks.push(...highValenceTracksForAlbum)
-
-      const progress = highValenceTracks.length * 100 / 30
-      setLoadProgress(progress > 100 ? 100 : progress)
-    })
-  }
-  const createPlaylist = async (artistName: string, tracks: SpotifyApi.TrackObjectSimplified[]): Promise<void> => {
-    const { data: liftPlaylist } = await axios.post(
-      'https://api.spotify.com/v1/users/' + props.me.id + '/playlists',
-      { name: '(lift) ' + artistName }
-    )
-    // const liftPlaylist = await spotifyApi.createPlaylist({ name: '(lift) ' + artistName })
-
-    await spotifyApi.addTracksToPlaylist(liftPlaylist.id, shuffle(tracks.map(track => track.uri)))
-    await fetchUserLiftPlaylists()
-  }
+  }, 5000)
 
   const queryArtist = async (query: string): Promise<SpotifyApi.ArtistObjectFull[]> => {
     const queryResults = await spotifyApi.searchArtists(query)
@@ -96,30 +42,33 @@ const Home: FC<Props> = props => {
   }, 350)
 
   const handleQueryChange = async (selectedArtist: SpotifyApi.ArtistObjectFull) => {
-    setIsProgressDialogOpen(true)
-    await createLiftPlaylist(selectedArtist)
-    setIsProgressDialogOpen(false)
-    setLoadProgress(0)
+    const uris = await api.gather(selectedArtist)
+    const firstUri = uris.pop()
+
+    setSelectedArtist(selectedArtist)
+    setCurrentlyPlaying(firstUri ?? null)
+    trackUriQueueActions.clear()
+    trackUriQueueActions.push(uris)
   }
-  const handlePlaylistClick = (selectedPlaylist: SpotifyApi.PlaylistObjectSimplified): void => setSelectedPlaylist(selectedPlaylist)
-  const handleDeletePlaylist = (playlistId: string): void => {
-    spotifyApi.unfollowPlaylist(playlistId)
-    const updatedPlaylists = playlists.filter(playlist => playlist.id !== playlistId)
-    setPlaylists(updatedPlaylists)
-    setSelectedPlaylist(updatedPlaylists[0] || null)
+
+  const handleNextClick = () => {
+    const nextUri = trackUriQueueActions.pop()
+    setCurrentlyPlaying(nextUri)
   }
 
   return (
     <div className='main-container'>
-      <ProgressDialog isOpen={isProgressDialogOpen} progress={loadProgress} />
-      <PlaylistList
-        playlists={playlists}
-        onPlaylistClick={handlePlaylistClick}
-        onDeletePlaylist={handleDeletePlaylist}
-      />
       <div className='container'>
         <ArtistSearch onChange={handleQueryChange} loadArtists={debouncedQueryArtist}/>
-        <SpotifyPlayer uri={selectedPlaylist?.uri} />
+        {
+          selectedArtist
+          && <Typography variant="h4">{ selectedArtist.name }</Typography>
+        }
+        <SpotifyPlayer uri={currentlyPlaying}/>
+        {
+          selectedArtist
+          && <IconButton onClick={handleNextClick}><SkipNext /></IconButton>
+        }
       </div>
     </div>
   )

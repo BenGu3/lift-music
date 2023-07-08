@@ -1,7 +1,7 @@
 import './index.css'
 
 type SpotifyPlayerProps = {
-  uri?: string,
+  uri: string | null,
 }
 
 const getUrlFromUri = (uri: string): string => {

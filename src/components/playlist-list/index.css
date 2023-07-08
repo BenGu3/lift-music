@@ -13,7 +13,7 @@
   position: absolute;
   height: 100%;
   width: 21%;
-  min-width: 50px;
+  min-width: 48px;
   left: 0;
   top: 0;
   animation: 0.5s ease-out 0s 1 slideInFromLeft;
