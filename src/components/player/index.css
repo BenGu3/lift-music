@@ -29,13 +29,20 @@
 }
 
 .player-container {
-    margin-top: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 24px;
     width: 60%;
     animation: 1s ease-out 0s 1 fadeIn;
+}
+
+.player-content {
+    display: flex;
+    margin-top: 24px;
 }
 
 .player {
     border: 0;
     height: 240px;
-    width: 100%
 }
