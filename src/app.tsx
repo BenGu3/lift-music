@@ -5,6 +5,7 @@ import axios from 'axios'
 const Login = lazy(() => import('./pages/login'))
 const Home = lazy(() => import('./pages/home'))
 import spotifyApi from './api/spotify.ts'
+import { spotifyRedirectUri } from './constants.ts'
 
 const spotifyAccessTokenKey = 'lift_spotify_token'
 const spotifyAccessTokenExpireTimeKey = 'lift_spotify_token_expire_date'
@@ -29,7 +30,7 @@ const getAccessToken = () => {
     const expiresTime = DateTime.now().plus(duration).toISO() ?? ''
     window.localStorage.setItem(spotifyAccessTokenExpireTimeKey, expiresTime)
     window.localStorage.setItem(spotifyAccessTokenKey, accessTokenParam)
-    window.history.replaceState(null, '', import.meta.env.VITE_REDIRECT_URI)
+    window.history.replaceState(null, '', spotifyRedirectUri)
 
     return window.localStorage.getItem(spotifyAccessTokenKey)
   }
