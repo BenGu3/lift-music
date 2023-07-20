@@ -1,7 +1,7 @@
 import { Divider, IconButton, List, ListItem, ListItemSecondaryAction } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 
-import './index.css'
+import * as css from './index.css'
 
 type PlaylistListProps = {
   playlists: SpotifyApi.PlaylistObjectSimplified[],
@@ -16,7 +16,7 @@ const PlaylistListWrapper = (props: PlaylistListProps) => {
         <div key={playlist.name}>
           <ListItem
             button
-            className="playlist-button"
+            className={css.playlistButton}
             onClick={() => props.onPlaylistClick(playlist)}
             key={playlist.name}
           >
@@ -27,20 +27,20 @@ const PlaylistListWrapper = (props: PlaylistListProps) => {
               </IconButton>
             </ListItemSecondaryAction>
           </ListItem>
-          {index < props.playlists.length - 1 && (<Divider className="white-divider"/>)}
+          {index < props.playlists.length - 1 && (<Divider className={css.whiteDivider}/>)}
         </div>
       )
     })
   }
 
   return (
-    <div className="playlist-list">
+    <div className={css.playlistList}>
       <List>
         <ListItem>
-          <div className="header">
-            <span className="motto">search.</span>
-            <span className="motto">listen.</span>
-            <span className="title">lift.</span>
+          <div className={css.header}>
+            <span className={css.motto}>search.</span>
+            <span className={css.motto}>listen.</span>
+            <span className={css.title}>lift.</span>
           </div>
         </ListItem>
         {renderPlaylists(props)}

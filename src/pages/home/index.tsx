@@ -8,7 +8,7 @@ import ArtistSearch from '../../components/artist-search'
 import { useInterval } from '../../hooks/useInterval.ts'
 import { useFIFOQueue, useLIFOQueue } from '../../hooks/useQueue.ts'
 
-import './index.css'
+import * as css from './index.css'
 
 type Props = {
   me: SpotifyApi.CurrentUsersProfileResponse
@@ -64,8 +64,8 @@ const Home: FC<Props> = () => {
   }
 
   return (
-    <div className='main-container'>
-      <div className='container'>
+    <div className={css.mainContainer}>
+      <div className={css.container}>
         <ArtistSearch onChange={handleQueryChange} loadArtists={debouncedQueryArtist}/>
         <SpotifyPlayer
           title={selectedArtist?.name ?? null}

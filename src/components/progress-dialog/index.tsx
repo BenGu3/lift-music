@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogTitle, LinearProgress } from '@mui/material'
 
-import './index.css'
+import * as css from './index.css'
 
 type ProgressDialogProps = {
   isOpen: boolean,
@@ -8,9 +8,9 @@ type ProgressDialogProps = {
 }
 
 const ProgressDialog = (props: ProgressDialogProps) => (
-  <Dialog open={props.isOpen} className='progress-dialog'>
+  <Dialog open={props.isOpen} className={css.progressDialog}>
     <DialogTitle>Generating playlist...</DialogTitle>
-    <DialogContent style={{ textAlign: 'center' }}>
+    <DialogContent className={css.progressDialogContent}>
       <LinearProgress variant='determinate' value={props.progress} color='primary'/>
     </DialogContent>
   </Dialog>

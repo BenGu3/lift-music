@@ -3,6 +3,8 @@ import { ActionMeta, components, DropdownIndicatorProps } from 'react-select'
 import Search from '@mui/icons-material/Search'
 import { AsyncProps } from 'react-select/src/Async'
 
+import * as css from './index.css'
+
 const DropdownIndicator = (props: DropdownIndicatorProps<SpotifyApi.ArtistObjectFull>) => {
   return (
     <components.DropdownIndicator {...props}>
@@ -30,7 +32,7 @@ const ArtistSearch = (props: Props) => {
   return (
     <AsyncSelect
       placeholder="Search your favorite artist"
-      className="search-bar"
+      className={css.searchBar}
       components={{ DropdownIndicator }}
       onChange={handleQueryChange}
       loadOptions={props.loadArtists}

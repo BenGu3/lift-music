@@ -23,7 +23,8 @@
     "types": ["vite/client"]
   },
   "include": [
-    "./src"
+    "./src",
+    "./styled-system"
   ],
   "references": [{ "path": "./tsconfig.node.json"}]
 }

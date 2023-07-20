@@ -1,6 +1,7 @@
-import './index.css'
 import { SkipNext, SkipPrevious } from '@mui/icons-material'
 import { IconButton, Typography } from '@mui/material'
+
+import * as css from './index.css'
 
 type SpotifyPlayerProps = {
   title: string | null,
@@ -19,20 +20,20 @@ const getUrlFromUri = (uri: string): string => {
 
 const SpotifyPlayer = (props: SpotifyPlayerProps) => {
   const renderEmptyPlayerMessage = () =>
-      <div className="empty-player-container">
-        <span className="empty-player-motto">search your favorite artists.</span>
-        <span className="empty-player-motto">listen to uplifting music.</span>
-        <span className="empty-player-title">welcome to lift.</span>
+      <div className={css.emptyPlayerContainer}>
+        <span className={css.emptyPlayerMotto}>search your favorite artists.</span>
+        <span className={css.emptyPlayerMotto}>listen to uplifting music.</span>
+        <span className={css.emptyPlayerTitle}>welcome to lift.</span>
       </div>
 
   const renderSpotifyPlayer = (uri: string) =>
-    <div className="player-container">
+    <div className={css.playerContainer}>
       <Typography variant="h4">{ props.title }</Typography>
-      <div className="player-content">
+      <div className={css.playerContent}>
         <IconButton onClick={props.onPreviousClick} disabled={!props.hasPreviousTracks}><SkipPrevious /></IconButton>
         <iframe
           title="Spotify Player"
-          className="player"
+          className={css.player}
           src={getUrlFromUri(uri)}
           allow="encrypted-media"
         />

@@ -1,6 +1,6 @@
 import Button from '@mui/material/Button'
 
-import './index.css'
+import * as css from './index.css'
 import { spotifyClientId, spotifyApiScope, spotifyRedirectUri } from '../../constants.ts'
 
 const Login = () => {
@@ -14,14 +14,14 @@ const Login = () => {
   }
 
   return (
-    <div className="header-container">
-      <div className="lift-intro-container">
-        <span className="login-lift-motto">search your favorite artists.</span>
-        <span className="login-lift-motto">access a curated playlist.</span>
-        <span className="login-lift-motto">listen to uplifting music.</span>
-        <span className="login-lift-title">welcome to lift.</span>
+    <div className={css.headerContainer}>
+      <div className={css.liftIntroContainer}>
+        <span className={css.loginLiftMotto}>search your favorite artists.</span>
+        <span className={css.loginLiftMotto}>access a curated playlist.</span>
+        <span className={css.loginLiftMotto}>listen to uplifting music.</span>
+        <span className={css.loginLiftTitle}>welcome to lift.</span>
       </div>
-      <Button variant="contained" color="primary" className="login-button" onClick={handleLogin}>
+      <Button variant="contained" color="primary" onClick={handleLogin}>
         Login with Spotify
       </Button>
     </div>
