@@ -1,9 +1,17 @@
 import Button from '@mui/material/Button'
+import { Navigate } from 'react-router-dom'
 
 import * as css from './index.css'
-import { spotifyClientId, spotifyApiScope, spotifyRedirectUri } from '../../constants.ts'
+import { spotifyClientId, spotifyApiScope, spotifyRedirectUri } from '../../constants'
+import { useAuth } from '../../hooks/useAuth'
 
 const Login = () => {
+  const auth = useAuth();
+
+  if (auth.isLoggedIn) {
+    return <Navigate to="/" />;
+  }
+
   const handleLogin = () => {
     const url = 'https://accounts.spotify.com/authorize?response_type=token'
       + '&client_id=' + encodeURIComponent(spotifyClientId)

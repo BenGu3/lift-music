@@ -1,71 +1,42 @@
-import { DateTime, Duration } from 'luxon'
-import { FC, lazy, useEffect, useState } from 'react'
-import axios from 'axios'
+import { FC, lazy } from 'react'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createTheme, ThemeProvider } from '@mui/material/styles'
 
+import { AuthProvider } from './context/auth'
+
+const AuthLayout = lazy(() => import('./pages/auth'))
 const Login = lazy(() => import('./pages/login'))
 const Home = lazy(() => import('./pages/home'))
-import spotifyApi from './api/spotify.ts'
-import { spotifyRedirectUri } from './constants.ts'
 
-const spotifyAccessTokenKey = 'lift_spotify_token'
-const spotifyAccessTokenExpireTimeKey = 'lift_spotify_token_expire_date'
+const theme = createTheme({
+  palette: {
+    primary: { main: '#125ec8' },
+    secondary: { main: '#f2f5f7' }
+  },
+})
 
-const parseHashParams = (url: string) => {
-  const urlObj = new URL(url)
-  const hash = urlObj.hash.slice(1)
-  const searchParams = new URLSearchParams(hash)
+const router = createBrowserRouter([
+  {
+    element: <AuthLayout />,
+    children: [
+      {
+        path: '/',
+        element: <Home />
+      }
+    ]
+  },
+  {
+    path: '/login',
+    element: <Login />,
+  },
+])
 
-  return Array.from(searchParams.entries()).reduce<Record<string, string>>((params, [key, value]) => {
-    params[key] = value;
-    return params;
-  }, {});
-}
-
-const getAccessToken = () => {
-  const hashParams = parseHashParams(window.location.href)
-  const expiresInParam = hashParams['expires_in']
-  const accessTokenParam = hashParams['access_token']
-  if (expiresInParam && accessTokenParam) {
-    const duration = Duration.fromMillis(parseInt(expiresInParam) * 1000)
-    const expiresTime = DateTime.now().plus(duration).toISO() ?? ''
-    window.localStorage.setItem(spotifyAccessTokenExpireTimeKey, expiresTime)
-    window.localStorage.setItem(spotifyAccessTokenKey, accessTokenParam)
-    window.history.replaceState(null, '', spotifyRedirectUri)
-
-    return window.localStorage.getItem(spotifyAccessTokenKey)
-  }
-
-  const accessToken = window.localStorage.getItem(spotifyAccessTokenKey)
-  const accessTokenExpirationDate = window.localStorage.getItem(spotifyAccessTokenExpireTimeKey)
-  const isTokenExpired = accessTokenExpirationDate ? DateTime.now() > DateTime.fromISO(accessTokenExpirationDate) : true
-
-  if (isTokenExpired)
-    return null
-
-  if (accessToken && !isTokenExpired)
-    return accessToken
-}
-
-const App: FC = () => {
-  const [me, setMe] = useState<SpotifyApi.CurrentUsersProfileResponse | null>(null)
-  const accessToken = getAccessToken()
-
-  useEffect(() => {
-    if (!accessToken) return
-
-    axios.defaults.headers.common.Authorization = 'Bearer ' + accessToken
-    spotifyApi.setAccessToken(accessToken)
-    spotifyApi.getMe().then(me => setMe(me))
-  }, [accessToken])
-
-  if (!accessToken)
-    return <Login/>
-
-  if (!me) {
-    return null
-  }
-
-  return <Home me={me}/>
-}
+const App: FC = () => (
+  <ThemeProvider theme={theme}>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  </ThemeProvider>
+)
 
 export default App

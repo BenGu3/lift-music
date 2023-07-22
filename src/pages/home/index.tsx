@@ -10,13 +10,9 @@ import { useFIFOQueue, useLIFOQueue } from '../../hooks/useQueue.ts'
 
 import * as css from './index.css'
 
-type Props = {
-  me: SpotifyApi.CurrentUsersProfileResponse
-}
-
 const MAX_QUEUE_LENGTH = 10
 
-const Home: FC<Props> = () => {
+const Home: FC = () => {
   const [selectedArtist, setSelectedArtist] = useState<SpotifyApi.ArtistObjectFull | null>(null)
   const [nextTrackQueue, nextTrackQueueActions] = useFIFOQueue<string>()
   const [prevTrackQueue, prevTrackQueueActions] = useLIFOQueue<string>()
