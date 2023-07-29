@@ -18,9 +18,6 @@ const TrackPage: FC = () => {
     spotifyApi.getAudioFeaturesForTrack(trackId).then(audioFeatures => setAudioFeatures(audioFeatures))
   }, [trackId])
 
-  if (!track)
-    return <div>Nothing here :sad:</div>
-
   return (
     <div className={containerStyles}>
       <TrackHeader track={track} />

@@ -1,22 +1,38 @@
 import { FC } from 'react'
 import { Typography } from '@mui/material'
+
 import { css } from '../../../styled-system/css'
 
 type TrackHeaderProps = {
-  track: SpotifyApi.TrackObjectFull
+  track?: SpotifyApi.TrackObjectFull
 }
 
 const TrackHeader: FC<TrackHeaderProps> = props => {
   const { track } = props
-  const { url: albumImage, width: albumImageWidth, height: albumImageHeight } = track.album.images[1]
+
+  const renderTrackHeader = (track: SpotifyApi.TrackObjectFull) => {
+    const { url: albumImage, width: albumImageWidth, height: albumImageHeight } = track.album.images[1]
+
+    return (
+      <>
+        <img src={albumImage} width={albumImageWidth} height={albumImageHeight} alt={track.album.name}/>
+        <div className={trackInfoStyles}>
+          <Typography variant="h3" className={titleContainerStyles}>{track.name}</Typography>
+          <Typography variant="subtitle1">{track.artists[0].name} • {track.album.name}</Typography>
+        </div>
+      </>
+    )
+  }
+
+  const renderNoTrack = () => <span>No audio features 😭</span>
 
   return (
     <div className={containerStyles}>
-      <img src={albumImage} width={albumImageWidth} height={albumImageHeight} alt={track.album.name}/>
-      <div className={trackInfoStyles}>
-        <Typography variant="h3" className={titleContainerStyles}>{track.name}</Typography>
-        <Typography variant="subtitle1">{track.artists[0].name} • {track.album.name}</Typography>
-      </div>
+      {
+        track
+          ? renderTrackHeader(track)
+          : renderNoTrack()
+      }
     </div>
   )
 }
