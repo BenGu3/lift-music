@@ -47,12 +47,14 @@ const getAccessToken = () => {
 export const AuthProvider: FC<{ children: ReactNode }> = props => {
   const [user, setUser] = useState<SpotifyApi.CurrentUsersProfileResponse | null>(null)
   const accessToken = getAccessToken()
+  if (accessToken) {
+    axios.defaults.headers.common.Authorization = 'Bearer ' + accessToken
+    spotifyApi.setAccessToken(accessToken)
+  }
 
   useEffect(() => {
     if (!accessToken) return
 
-    axios.defaults.headers.common.Authorization = 'Bearer ' + accessToken
-    spotifyApi.setAccessToken(accessToken)
     spotifyApi.getMe().then(me => setUser(me))
   }, [accessToken])
 
