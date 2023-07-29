@@ -18,8 +18,10 @@ const AlbumContent: FC<AlbumContentProps> = props => {
     return (
       <ListItemButton key={track.id} component={Link} to={`/track/${track.id}`}>
         <ListItemText className={trackNumberColumnStyles}>{track.track_number}</ListItemText>
-        <ListItemText primary={track.name} secondary={track.artists[0].name} />
-        <ListItemText className={durationColumnsStyles}>{duration}</ListItemText>
+        <ListItemText secondary={track.artists[0].name}>
+          <div className={trackNameColumnStyles} >{track.name}</div>
+        </ListItemText>
+        <ListItemText className={durationColumnStyles}>{duration}</ListItemText>
       </ListItemButton>
     )
   }
@@ -30,7 +32,7 @@ const AlbumContent: FC<AlbumContentProps> = props => {
         <ListItem className={headerContainerStyles}>
           <ListItemText className={trackNumberColumnStyles}>#</ListItemText>
           <ListItemText>Title</ListItemText>
-          <ListItemText className={durationColumnsStyles}>Duration</ListItemText>
+          <ListItemText className={durationColumnStyles}>Duration</ListItemText>
         </ListItem>
         <Divider />
 
@@ -64,10 +66,18 @@ const headerContainerStyles = css({
 })
 
 const trackNumberColumnStyles = css({
+  width: '32px',
+  minWidth: '32px !important',
   maxWidth: '32px',
 })
 
-const durationColumnsStyles = css({
+const trackNameColumnStyles = css({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+})
+
+const durationColumnStyles = css({
   textAlign: 'end',
   hideBelow: 'sm',
 })
