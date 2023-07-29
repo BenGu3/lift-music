@@ -2,6 +2,7 @@ import { FC } from 'react'
 import { Typography } from '@mui/material'
 
 import { css } from '../../../styled-system/css'
+import { Link } from 'react-router-dom'
 
 type TrackHeaderProps = {
   track?: SpotifyApi.TrackObjectFull
@@ -18,7 +19,9 @@ const TrackHeader: FC<TrackHeaderProps> = props => {
         <img src={albumImage} width={albumImageWidth} height={albumImageHeight} alt={track.album.name}/>
         <div className={trackInfoStyles}>
           <Typography variant="h3" className={titleContainerStyles}>{track.name}</Typography>
-          <Typography variant="subtitle1">{track.artists[0].name} • {track.album.name}</Typography>
+          <Typography variant="subtitle1">
+            {track.artists[0].name} • <Link to={`/album/${track.album.id}`} className={linkStyles}>{track.album.name}</Link>
+          </Typography>
         </div>
       </>
     )
@@ -66,4 +69,11 @@ const trackInfoStyles = css({
 
 const titleContainerStyles = css({
   padding: '8px 0'
+})
+
+const linkStyles = css({
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'underline',
+  },
 })
