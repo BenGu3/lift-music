@@ -1,4 +1,4 @@
-import { FC, lazy } from 'react'
+import { FC, lazy, Suspense } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
@@ -9,6 +9,7 @@ const AuthLayout = lazy(() => import('./pages/auth'))
 const LoginPage = lazy(() => import('./pages/login'))
 const HomePage = lazy(() => import('./pages/home'))
 const TrackPage = lazy(() => import('./pages/track'))
+const AlbumPage = lazy(() => import('./pages/album'))
 
 const theme = createTheme({
   palette: {
@@ -20,29 +21,36 @@ const theme = createTheme({
 
 const router = createBrowserRouter([
   {
-    element: <AuthLayout />,
+    element: <AuthLayout/>,
     children: [
       {
         path: '/',
-        element: <HomePage />
+        element: <HomePage/>
+
       },
       {
         path: '/track/:trackId',
-        element: <TrackPage />
+        element: <TrackPage/>
+      },
+      {
+        path: '/album/:albumId',
+        element: <AlbumPage/>
       }
     ]
   },
   {
     path: '/login',
-    element: <LoginPage />,
+    element: <LoginPage/>,
   },
 ])
 
 const App: FC = () => (
   <ThemeProvider theme={theme}>
-    <CssBaseline />
+    <CssBaseline/>
     <AuthProvider>
-      <RouterProvider router={router} />
+      <Suspense>
+        <RouterProvider router={router}/>
+      </Suspense>
     </AuthProvider>
   </ThemeProvider>
 )
