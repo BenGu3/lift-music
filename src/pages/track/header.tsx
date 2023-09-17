@@ -68,7 +68,12 @@ const trackInfoStyles = css({
 })
 
 const titleContainerStyles = css({
-  padding: '8px 0'
+  padding: '8px 0',
+  textAlign: 'center',
+
+  md: {
+    textAlign: 'unset'
+  }
 })
 
 const linkStyles = css({

@@ -19,7 +19,7 @@ const AlbumContent: FC<AlbumContentProps> = props => {
       <ListItemButton key={track.id} component={Link} to={`/track/${track.id}`}>
         <ListItemText className={trackNumberColumnStyles}>{track.track_number}</ListItemText>
         <ListItemText secondary={track.artists[0].name}>
-          <div className={trackNameColumnStyles} >{track.name}</div>
+          <div className={trackNameColumnStyles}>{track.name}</div>
         </ListItemText>
         <ListItemText className={durationColumnStyles}>{duration}</ListItemText>
       </ListItemButton>
