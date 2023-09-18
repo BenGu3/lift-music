@@ -10,6 +10,7 @@ const LoginPage = lazy(() => import('./pages/login'))
 const HomePage = lazy(() => import('./pages/home'))
 const TrackPage = lazy(() => import('./pages/track'))
 const AlbumPage = lazy(() => import('./pages/album'))
+const ArtistPage = lazy(() => import('./pages/artist'))
 
 const theme = createTheme({
   palette: {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: '/album/:albumId',
         element: <AlbumPage/>
+      },
+      {
+        path: '/artist/:artistId',
+        element: <ArtistPage/>
       }
     ]
   },

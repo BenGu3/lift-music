@@ -1,16 +1,17 @@
 import { FC } from 'react'
 import { Typography } from '@mui/material'
+import { Link } from 'react-router-dom'
 
 import { css } from '../../../styled-system/css'
 
-type TrackHeaderProps = {
+type AlbumHeaderProps = {
   album?: SpotifyApi.AlbumObjectFull
 }
 
-const TrackHeader: FC<TrackHeaderProps> = props => {
+const AlbumHeader: FC<AlbumHeaderProps> = props => {
   const { album } = props
 
-  const renderTrackHeader = (album: SpotifyApi.AlbumObjectFull) => {
+  const renderAlbumHeader = (album: SpotifyApi.AlbumObjectFull) => {
     const { url: albumImage, width: albumImageWidth, height: albumImageHeight } = album.images[1]
 
     return (
@@ -18,26 +19,30 @@ const TrackHeader: FC<TrackHeaderProps> = props => {
         <img src={albumImage} width={albumImageWidth} height={albumImageHeight} alt={album.name}/>
         <div className={albumInfoStyles}>
           <Typography variant="h3" className={titleContainerStyles}>{album.name}</Typography>
-          <Typography variant="subtitle1">{album.artists[0].name}</Typography>
+          <Typography variant="subtitle1">
+            <Link to={`/artist/${album.artists[0].id}`} className={linkStyles}>
+            {album.artists[0].name}
+            </Link>
+          </Typography>
         </div>
       </>
     )
   }
 
-  const renderNoTrack = () => <span>No album 😭</span>
+  const renderNoAlbum = () => <span>No album 😭</span>
 
   return (
     <div className={containerStyles}>
       {
         album
-          ? renderTrackHeader(album)
-          : renderNoTrack()
+          ? renderAlbumHeader(album)
+          : renderNoAlbum()
       }
     </div>
   )
 }
 
-export default TrackHeader
+export default AlbumHeader
 
 const containerStyles = css({
   flexDirection: 'column',
@@ -71,4 +76,11 @@ const titleContainerStyles = css({
   md: {
     textAlign: 'unset'
   }
+})
+
+const linkStyles = css({
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'underline',
+  },
 })

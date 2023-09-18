@@ -1,8 +1,8 @@
 import { FC } from 'react'
 import { Typography } from '@mui/material'
+import { Link } from 'react-router-dom'
 
 import { css } from '../../../styled-system/css'
-import { Link } from 'react-router-dom'
 
 type TrackHeaderProps = {
   track?: SpotifyApi.TrackObjectFull
@@ -20,7 +20,7 @@ const TrackHeader: FC<TrackHeaderProps> = props => {
         <div className={trackInfoStyles}>
           <Typography variant="h3" className={titleContainerStyles}>{track.name}</Typography>
           <Typography variant="subtitle1">
-            {track.artists[0].name} • <Link to={`/album/${track.album.id}`} className={linkStyles}>{track.album.name}</Link>
+            <Link to={`/artist/${track.artists[0].id}`} className={linkStyles}>{track.artists[0].name}</Link> • <Link to={`/album/${track.album.id}`} className={linkStyles}>{track.album.name}</Link>
           </Typography>
         </div>
       </>
