@@ -16,7 +16,7 @@
     "@emotion/styled": "11.11.0",
     "@mui/icons-material": "5.11.16",
     "@mui/material": "5.13.6",
-    "axios": "1.4.0",
+    "axios": "1.6.0",
     "bluebird": "3.7.2",
     "dotenv": "8.2.0",
     "lodash": "4.17.21",
